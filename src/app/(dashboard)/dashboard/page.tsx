@@ -1,7 +1,8 @@
-import StatsCard from "@/components/dashboard/stats-card";
-import QuickActions from "@/components/dashboard/quick-actions";
-import RecentDocuments from "@/components/dashboard/recent-documents";
 
+
+import QuickActions from "@/src/components/layout/dashboard/quick-actions";
+import RecentDocuments from "@/src/components/layout/dashboard/recent-documents";
+import StatsCard from "@/src/components/layout/dashboard/stats-card";
 import {
   FileText,
   History,
