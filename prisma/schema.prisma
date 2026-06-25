@@ -1,0 +1,91 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  OWNER
+  EDITOR
+  VIEWER
+}
+
+model User {
+  id        String   @id @default(uuid())
+  name      String?
+  email     String   @unique
+  password  String
+
+  documents Document[] @relation("OwnerDocs")
+
+  members   DocumentMember[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Document {
+  id        String @id @default(uuid())
+
+  title     String
+  content   Json
+
+  ownerId   String
+  owner     User @relation("OwnerDocs", fields:[ownerId], references:[id])
+
+  members   DocumentMember[]
+  versions  DocumentVersion[]
+  syncOps   SyncOperation[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model DocumentMember {
+  id         String @id @default(uuid())
+
+  documentId String
+  userId     String
+
+  role       Role
+
+  document   Document @relation(fields:[documentId], references:[id])
+  user       User @relation(fields:[userId], references:[id])
+
+  @@unique([documentId,userId])
+}
+
+model DocumentVersion {
+  id         String @id @default(uuid())
+
+  documentId String
+
+  content    Json
+
+  createdBy  String
+
+  createdAt  DateTime @default(now())
+
+  document   Document @relation(fields:[documentId], references:[id])
+}
+
+model SyncOperation {
+  id              String @id @default(uuid())
+
+  documentId      String
+
+  operationType   String
+
+  payload         Json
+
+  clientTimestamp DateTime
+
+  serverTimestamp DateTime?
+
+  document        Document @relation(fields:[documentId], references:[id])
+
+  createdAt       DateTime @default(now())
+}
