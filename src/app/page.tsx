@@ -5,6 +5,7 @@ import {
   Shield,
   Wifi,
 } from "lucide-react";
+import Footer from "../components/layout/footer";
 
 export default function HomePage() {
   return (
@@ -16,7 +17,7 @@ export default function HomePage() {
         {/* Navbar */}
         <header className="mx-auto flex max-w-7xl items-center justify-between px-6 py-6">
           <h1 className="text-2xl font-bold">
-            CollaborativeDocs
+            CollabDocs
           </h1>
 
           <div className="flex gap-4">
@@ -119,11 +120,7 @@ export default function HomePage() {
         </section>
 
         {/* Footer */}
-        <footer className="mt-32 border-t border-white/10 py-10 text-center text-zinc-500">
-          <p>
-            Jahanara Khatun • GitHub: https://github.com/zarakhatun58 • LinkedIn: https://www.linkedin.com/in/jahanara-khatun/
-          </p>
-        </footer>
+       <Footer/>
       </div>
     </main>
   );

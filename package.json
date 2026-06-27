@@ -10,19 +10,25 @@
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
+    "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^6.19.3",
     "@tiptap/extension-placeholder": "^3.27.1",
     "@tiptap/react": "^3.27.1",
     "@tiptap/starter-kit": "^3.27.1",
     "@upstash/ratelimit": "^2.0.8",
     "bcrypt": "^6.0.0",
+    "bcryptjs": "^3.0.3",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "cors": "^2.8.6",
     "dexie": "^4.4.4",
     "dexie-react-hooks": "^4.4.0",
+    "express": "^5.2.1",
     "framer-motion": "^12.42.0",
+    "helmet": "^8.2.0",
     "jsonwebtoken": "^9.0.3",
     "lucide-react": "^1.21.0",
+    "morgan": "^1.11.0",
     "next": "16.2.9",
     "next-auth": "^4.24.14",
     "pg": "^8.22.0",
@@ -39,7 +45,11 @@
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
     "@types/bcrypt": "^6.0.0",
-    "@types/node": "^20",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/cors": "^2.8.19",
+    "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
+    "@types/node": "^20.19.43",
     "@types/pg": "^8.20.0",
     "@types/react": "^19",
     "@types/react-dom": "^19",
@@ -47,6 +57,7 @@
     "eslint": "^9",
     "eslint-config-next": "16.2.9",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "ts-node-dev": "^2.0.0",
+    "typescript": "^5.9.3"
   }
 }
