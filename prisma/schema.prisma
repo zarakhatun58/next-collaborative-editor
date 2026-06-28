@@ -27,40 +27,38 @@ enum SyncOperationType {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  name      String?
-  email     String   @unique
-  password  String
+  id       String  @id @default(uuid())
+  name     String?
+  email    String  @unique
+  password String
 
-  // Relations
-  ownedDocuments Document[]       @relation("OwnerDocuments")
-  memberships    DocumentMember[]
-  versions       DocumentVersion[] @relation("VersionCreator")
+  ownedDocuments Document[] @relation("OwnerDocuments")
+
+  memberships DocumentMember[]
+  versions    DocumentVersion[] @relation("VersionCreator")
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
 model Document {
-  id      String @id @default(uuid())
+  id String @id @default(uuid())
 
   title   String
   content Json
-
   status  DocumentStatus @default(ACTIVE)
 
   ownerId String
-  owner   User @relation("OwnerDocuments", fields: [ownerId], references: [id])
 
+  owner User @relation("OwnerDocuments", fields: [ownerId], references: [id])
+
+  members      DocumentMember[]
+  versions     DocumentVersion[]
+  syncOps      SyncOperation[]
+  conflicts    Conflict[]
   lastEditedBy String?
-
-  members  DocumentMember[]
-  versions DocumentVersion[]
-  syncOps  SyncOperation[]
-  conflicts Conflict[]
-
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  createdAt    DateTime          @default(now())
+  updatedAt    DateTime          @updatedAt
 
   @@index([ownerId])
 }
@@ -69,12 +67,14 @@ model DocumentMember {
   id String @id @default(uuid())
 
   documentId String
-  userId     String
+
+  userId String
 
   role Role
 
   document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([documentId, userId])
   @@index([documentId])

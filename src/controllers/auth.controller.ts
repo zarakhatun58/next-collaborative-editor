@@ -2,7 +2,6 @@ import { NextRequest, NextResponse } from "next/server";
 import {
   loginUser,
   registerUser,
-  getCurrentUser,
 } from "@/src/services/auth.service";
 import { authenticate } from "../middleware/auth.middleware";
 import { prisma } from "../config/prisma";
@@ -75,6 +74,13 @@ export async function me(req: NextRequest) {
     const user = await prisma.user.findUnique({
       where: {
         id: auth.userId,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        createdAt: true,
+        updatedAt: true,
       },
     });
 

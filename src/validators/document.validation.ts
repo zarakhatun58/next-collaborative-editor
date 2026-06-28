@@ -3,23 +3,27 @@ import { z } from "zod";
 export const createDocumentSchema = z.object({
   title: z
     .string()
-    .trim()
-    .min(1, "Title is required")
-    .max(150),
+    .min(3, "Title must be at least 3 characters"),
 
-  content: z.any().optional(),
+  content: z
+    .string()
+    .optional()
+    .default(""),
 });
 
 export const updateDocumentSchema = z.object({
   title: z
     .string()
-    .trim()
-    .max(150)
+    .min(3)
     .optional(),
 
-  content: z.any().optional(),
-
-  status: z
-    .enum(["ACTIVE", "ARCHIVED", "DELETED"])
+  content: z
+    .string()
     .optional(),
 });
+
+export type CreateDocumentInput =
+  z.infer<typeof createDocumentSchema>;
+
+export type UpdateDocumentInput =
+  z.infer<typeof updateDocumentSchema>;
