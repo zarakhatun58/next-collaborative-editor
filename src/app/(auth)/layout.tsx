@@ -6,7 +6,7 @@ export default function AuthLayout({
   return (
     <div className="min-h-screen grid lg:grid-cols-2">
       {/* Left Side */}
-      <div className="hidden lg:flex flex-col justify-center p-16 bg-gradient-to-br from-violet-700 via-purple-700 to-cyan-700">
+      <div className="hidden lg:flex flex-col justify-center p-16 bg-gradient-to-br from-[#0f172a] via-[#111827] to-[#020617]">
         <h1 className="text-6xl font-bold text-white">
           CollabDocs
         </h1>
@@ -34,9 +34,16 @@ export default function AuthLayout({
       </div>
 
       {/* Right Side */}
-      <div className="flex items-center justify-center p-6 bg-[#09090b]">
-        {children}
-      </div>
+     <div className="relative flex items-center justify-center overflow-hidden bg-gradient-to-br from-[#0f172a] via-[#111827] to-[#020617] p-6">
+  {/* Purple Glow */}
+  <div className="absolute -top-20 -right-20 h-80 w-80 rounded-full bg-violet-600/20 blur-[120px]" />
+ 
+
+  {/* Login / Register Card */}
+  <div className="relative z-10">
+    {children}
+  </div>
+</div>
     </div>
   );
 }

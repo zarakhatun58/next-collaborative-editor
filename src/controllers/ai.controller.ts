@@ -8,7 +8,10 @@ import {
    continueWriting,
    generateTitle,
    translateText,
-   convertToBullets ,
+   convertToBullets,
+   changeTone,
+   simplifyText,
+   explainText, 
 } from "@/src/services/ai.service";
 
 import {
@@ -19,7 +22,10 @@ import {
    titleSchema ,
    translateSchema,
    continueWritingSchema,
-   bulletSchema ,
+   bulletSchema,
+   toneSchema,
+   simplifySchema,
+   explainSchema,
 } from "@/src/validators/ai.validation";
 
 // ===============================
@@ -300,6 +306,112 @@ export async function bullets(
           error instanceof Error
             ? error.message
             : "Bullet conversion failed",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+}
+// ===============================
+// Change Tone
+// ===============================
+
+export async function tone(
+  req: NextRequest
+) {
+  try {
+    const body = await req.json();
+
+    const data = toneSchema.parse(body);
+
+    const result = await changeTone(
+      data.text,
+      data.tone
+    );
+
+    return NextResponse.json({
+      success: true,
+      result,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Tone change failed",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+}
+// ===============================
+// Simplify Text
+// ===============================
+
+export async function simplify(
+  req: NextRequest
+) {
+  try {
+    const body = await req.json();
+
+    const data =
+      simplifySchema.parse(body);
+
+    const result =
+      await simplifyText(data.text);
+
+    return NextResponse.json({
+      success: true,
+      result,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Simplification failed",
+      },
+      {
+        status: 400,
+      }
+    );
+  }
+}
+// ===============================
+// Explain Text
+// ===============================
+
+export async function explain(
+  req: NextRequest
+) {
+  try {
+    const body = await req.json();
+
+    const data =
+      explainSchema.parse(body);
+
+    const result =
+      await explainText(data.text);
+
+    return NextResponse.json({
+      success: true,
+      result,
+    });
+  } catch (error) {
+    return NextResponse.json(
+      {
+        success: false,
+        message:
+          error instanceof Error
+            ? error.message
+            : "Explanation failed",
       },
       {
         status: 400,

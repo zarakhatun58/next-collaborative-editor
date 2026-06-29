@@ -55,14 +55,14 @@
   --card-foreground: oklch(0.145 0 0);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
+  --primary: #7C3AED;
+  --primary-foreground: #ffffff;
+  --secondary: #06B6D4;
+  --secondary-foreground: #ffffff;
   --muted: oklch(0.97 0 0);
   --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --accent: #A855F7;
+  --accent-foreground: #ffffff;
   --destructive: oklch(0.577 0.245 27.325);
   --border: oklch(0.922 0 0);
   --input: oklch(0.922 0 0);
@@ -81,6 +81,9 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+   --glass: rgba(255, 255, 255, .05);
+  --glass-hover: rgba(255, 255, 255, .08);
+  --glass-border: rgba(255, 255, 255, .08);
 }
 
 .dark {
@@ -90,13 +93,13 @@
   --card-foreground: oklch(0.985 0 0);
   --popover: oklch(0.205 0 0);
   --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
+  --primary: #8B5CF6;
   --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
+  --secondary: #22D3EE;
   --secondary-foreground: oklch(0.985 0 0);
   --muted: oklch(0.269 0 0);
   --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
+  --accent: #A855F7;
   --accent-foreground: oklch(0.985 0 0);
   --destructive: oklch(0.704 0.191 22.216);
   --border: oklch(1 0 0 / 10%);
@@ -117,13 +120,240 @@
   --sidebar-ring: oklch(0.556 0 0);
 }
 
+
+::-webkit-scrollbar{
+
+width:10px;
+
+height:10px;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+background:#7C3AED;
+
+border-radius:20px;
+
+}
+
+::-webkit-scrollbar-track{
+
+background:transparent;
+
+}
+::selection{
+
+background:#7C3AED;
+
+color:white;
+
+}
+*{
+transition:
+background-color .2s,
+border-color .2s,
+color .2s;
+}
+.glass-card{
+
+background:rgba(255,255,255,.04);
+
+backdrop-filter:blur(24px);
+
+border:1px solid rgba(255,255,255,.08);
+
+box-shadow:
+
+0 10px 40px rgba(0,0,0,.25);
+
+}
+.ProseMirror{
+
+min-height:700px;
+max-width:900px;
+margin:auto;
+outline:none;
+
+font-size:18px;
+
+line-height:1.9;
+
+padding:2rem;
+
+}
+.ProseMirror h3{
+
+font-size:1.4rem;
+
+font-weight:600;
+
+margin-top:1.5rem;
+
+}
+.ProseMirror h1{
+
+font-size:2.5rem;
+
+font-weight:700;
+
+margin-bottom:1rem;
+
+}
+.ProseMirror img{
+
+max-width:100%;
+
+border-radius:16px;
+
+margin:1rem auto;
+
+display:block;
+
+}
+.ProseMirror table{
+
+width:100%;
+
+border-collapse:collapse;
+
+margin:1.5rem 0;
+
+}
+
+.ProseMirror td,
+.ProseMirror th{
+
+border:1px solid rgba(255,255,255,.1);
+
+padding:.75rem;
+
+}
+.ProseMirror ul[data-type="taskList"]{
+
+list-style:none;
+
+padding-left:0;
+
+}
+.ProseMirror p.is-editor-empty:first-child::before{
+
+content:attr(data-placeholder);
+
+color:#71717A;
+
+pointer-events:none;
+
+float:left;
+
+height:0;
+
+}
+.ProseMirror:focus{
+
+outline:none;
+
+}
+.ProseMirror h2{
+
+font-size:2rem;
+
+font-weight:700;
+
+margin-top:2rem;
+
+}
+
+.ProseMirror p{
+
+margin:1rem 0;
+
+}
+
+.ProseMirror ul{
+
+padding-left:2rem;
+
+list-style:disc;
+
+}
+
+.ProseMirror ol{
+
+padding-left:2rem;
+
+list-style:decimal;
+
+}
+
+.ProseMirror blockquote{
+
+border-left:4px solid #7C3AED;
+
+padding-left:1rem;
+
+color:#a1a1aa;
+
+}
+
+.ProseMirror code{
+
+background:#27272A;
+
+padding:.2rem .4rem;
+
+border-radius:.4rem;
+
+}
+.glass-card:hover{
+
+border-color:rgba(124,58,237,.35);
+
+box-shadow:
+
+0 0 60px rgba(124,58,237,.18);
+
+}
+.btn-gradient{
+
+background:
+
+linear-gradient(
+
+135deg,
+
+#7C3AED,
+
+#06B6D4
+
+);
+
+}
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
+
     @apply bg-background text-foreground;
+
+    background:
+
+      radial-gradient(circle at top left,
+        rgba(124, 58, 237, .15),
+        transparent 35%),
+
+      radial-gradient(circle at top right,
+        rgba(6, 182, 212, .15),
+        transparent 40%),
+
+      var(--background);
+
+    min-height: 100vh;
+
   }
+
   html {
     @apply font-sans;
   }

@@ -81,3 +81,37 @@ export const bulletSchema = z.object({
     .string()
     .min(10, "Text must be at least 10 characters."),
 });
+// ===============================
+// Change Tone
+// ===============================
+
+export const toneSchema = z.object({
+  text: z
+    .string()
+    .min(10, "Text must be at least 10 characters."),
+
+  tone: z.enum([
+    "professional",
+    "friendly",
+    "formal",
+    "casual",
+  ]),
+});
+// ===============================
+// Simplify Text
+// ===============================
+
+export const simplifySchema = z.object({
+  text: z
+    .string()
+    .min(10, "Text must be at least 10 characters."),
+});
+// ===============================
+// Explain Text
+// ===============================
+
+export const explainSchema = z.object({
+  text: z
+    .string()
+    .min(5, "Text must be at least 5 characters."),
+});

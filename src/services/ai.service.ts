@@ -227,3 +227,85 @@ ${text}
 
   return response.text?.trim();
 }
+// ===============================
+// Change Tone
+// ===============================
+
+export async function changeTone(
+  text: string,
+  tone: string
+) {
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: `
+You are an AI writing assistant.
+
+Rewrite the following text in a ${tone} tone.
+
+Rules:
+- Preserve the original meaning.
+- Do not add new information.
+- Return ONLY the rewritten text.
+- Do not explain your changes.
+
+Text:
+${text}
+`,
+  });
+
+  return response.text?.trim();
+}
+// ===============================
+// Simplify Text
+// ===============================
+
+export async function simplifyText(
+  text: string
+) {
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: `
+You are an AI writing assistant.
+
+Rewrite the following text using simple, easy-to-understand language.
+
+Rules:
+- Keep the original meaning.
+- Use short sentences.
+- Return ONLY the simplified text.
+- Do not explain anything.
+
+Text:
+${text}
+`,
+  });
+
+  return response.text?.trim();
+}
+// ===============================
+// Explain Text
+// ===============================
+
+export async function explainText(
+  text: string
+) {
+  const response = await ai.models.generateContent({
+    model: "gemini-2.5-flash",
+    contents: `
+You are an expert teacher.
+
+Explain the following text in simple language.
+
+Rules:
+- Keep the explanation concise.
+- Maximum 150 words.
+- Return ONLY the explanation.
+- Do not repeat the original text.
+
+Text:
+${text}
+`,
+  });
+
+  return response.text?.trim();
+}

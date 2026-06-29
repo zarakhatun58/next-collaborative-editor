@@ -11,6 +11,7 @@ import {
   Menu,
 } from "lucide-react";
 import { useEffect, useState } from "react";
+import LogoutButton from "../logout-button";
 
 export default function Navbar() {
   const [isOnline, setIsOnline] = useState(true);
@@ -90,7 +91,7 @@ export default function Navbar() {
           <button className="rounded-xl p-2 transition hover:bg-white/10">
             <Bell className="h-5 w-5 text-white" />
           </button>
-
+          <LogoutButton />
           {/* Avatar */}
           <div className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
             JK

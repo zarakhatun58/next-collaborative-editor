@@ -1,10 +1,30 @@
 "use client";
 
+import { api } from "@/src/lib/api";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
+
 
 export default function LoginPage() {
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const router = useRouter();
+
+  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
+
+  const res = await api.post("/auth/login", {
+    email,
+    password,
+  });
+
+  localStorage.setItem("token", res.data.token);
+
+  router.replace("/dashboard");
+};
   return (
-    <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/5 p-8 backdrop-blur-xl">
+    <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[0.04] p-8 backdrop-blur-3xl shadow-2xl shadow-violet-900/20">
       <h1 className="text-3xl font-bold">
         Welcome Back
       </h1>
@@ -13,17 +33,22 @@ export default function LoginPage() {
         Login to continue
       </p>
 
-      <form className="mt-8 space-y-4">
+      <form className="mt-8 space-y-4"  
+      onSubmit={onSubmit}>
         <input
           type="email"
           placeholder="Email"
-          className="w-full rounded-xl border border-white/10 bg-black/20 p-3 outline-none"
+           value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-white placeholder:text-zinc-500 focus:border-violet-500 focus:outline-none"
         />
 
         <input
           type="password"
           placeholder="Password"
-          className="w-full rounded-xl border border-white/10 bg-black/20 p-3 outline-none"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full rounded-xl border border-white/10 bg-white/5 p-3 text-white placeholder:text-zinc-500 focus:border-violet-500 focus:outline-none"
         />
 
         <button

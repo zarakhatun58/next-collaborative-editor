@@ -113,3 +113,61 @@ export async function me(req: NextRequest) {
     );
   }
 }
+export async function updateProfile(
+  req: NextRequest
+) {
+  try {
+
+    const auth = await authenticate(req);
+
+    const body = await req.json();
+
+    const {
+      name,
+      email,
+    } = body;
+
+
+    const user =
+      await prisma.user.update({
+        where: {
+          id: auth.userId,
+        },
+
+        data: {
+          name,
+          email,
+        },
+
+        select: {
+          id: true,
+          name: true,
+          email: true,
+          updatedAt: true,
+        },
+      });
+
+
+
+    return NextResponse.json({
+      success: true,
+      user,
+    });
+
+
+  } catch(error) {
+
+    return NextResponse.json(
+      {
+        success:false,
+        message:
+          error instanceof Error
+          ? error.message
+          : "Update failed",
+      },
+      {
+        status:400,
+      }
+    );
+  }
+}

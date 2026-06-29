@@ -1,33 +1,46 @@
-export default function VersionCompare() {
-  return (
-    <div className="rounded-3xl border border-white/10 bg-white/5 p-6">
-      <h2 className="mb-4 text-xl font-bold">
-        Version Comparison
-      </h2>
+"use client";
 
-      <div className="grid gap-4 md:grid-cols-2">
-        <div className="rounded-2xl border border-red-500/20 bg-red-500/5 p-4">
-          <h3 className="mb-3 font-semibold text-red-400">
-            Removed
-          </h3>
+interface Props{
+    version:any;
+}
 
-          <ul className="space-y-2 text-sm text-zinc-300">
-            <li>- Old paragraph removed</li>
-            <li>- Deprecated API section removed</li>
-          </ul>
-        </div>
+export default function VersionCompare({
+    version,
+}:Props){
 
-        <div className="rounded-2xl border border-green-500/20 bg-green-500/5 p-4">
-          <h3 className="mb-3 font-semibold text-green-400">
-            Added
-          </h3>
+if(!version){
 
-          <ul className="space-y-2 text-sm text-zinc-300">
-            <li>+ New architecture diagram</li>
-            <li>+ Sync engine documentation</li>
-          </ul>
-        </div>
-      </div>
-    </div>
-  );
+return(
+
+<div className="glass-card rounded-3xl p-8">
+
+No Version Selected
+
+</div>
+
+);
+
+}
+
+return(
+
+<div className="glass-card rounded-3xl p-6">
+
+<h2 className="mb-5 text-xl font-bold">
+
+{version.version}
+
+</h2>
+
+<div
+className="prose prose-invert max-w-none"
+dangerouslySetInnerHTML={{
+__html:version.content
+}}
+/>
+
+</div>
+
+);
+
 }

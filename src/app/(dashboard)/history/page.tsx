@@ -1,33 +1,61 @@
-import AIPanel from "@/src/components/editor/ai-panel";
-import Collaborators from "@/src/components/editor/collaborators";
-import Editor from "@/src/components/editor/editor";
-import ConnectionStatus from "@/src/components/editor/connection-status";
+"use client";
+
+import { useEffect, useState } from "react";
+import { api } from "@/src/lib/api";
+import { useParams } from "next/navigation";
+import VersionTimeline from "@/src/components/history/version-timeline";
+import VersionCompare from "@/src/components/history/version-compare";
+
+export default function HistoryPage() {
+  const [versions, setVersions] = useState([]);
+  const [selectedVersion, setSelectedVersion] = useState<any>(null);
+const params = useParams();
+  const documentId = params.id as string;
 
 
-export default function DocumentPage() {
+  useEffect(() => {
+    loadVersions();
+  }, []);
+
+  async function loadVersions() {
+    try {
+      const { data } = await api.get(
+        `/versions?documentId=${documentId}`
+      );
+
+      setVersions(data);
+
+      if (data.length) {
+        setSelectedVersion(data[0]);
+      }
+    } catch (err) {
+      console.error(err);
+    }
+  }
+
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col gap-4 rounded-3xl border border-white/10 bg-white/5 p-6 md:flex-row md:items-center md:justify-between">
-        <div>
-          <h1 className="text-3xl font-bold">
-            Project Proposal
-          </h1>
+    <div className="space-y-8">
+      <div>
+        <h1 className="text-4xl font-bold">
+          Version History
+        </h1>
 
-          <p className="text-zinc-400">
-            Last edited 2 minutes ago
-          </p>
-        </div>
-
-        <div className="flex items-center gap-6">
-          <ConnectionStatus />
-          <Collaborators />
-        </div>
+        <p className="mt-2 text-zinc-400">
+          Restore any previous version.
+        </p>
       </div>
 
-      <div className="grid gap-6 xl:grid-cols-[1fr_320px]">
-        <Editor />
+      <div className="grid gap-6 xl:grid-cols-[380px_1fr]">
+        <VersionTimeline
+          versions={versions}
+          selected={selectedVersion}
+          onSelect={setSelectedVersion}
+          reload={loadVersions}
+        />
 
-        <AIPanel />
+        <VersionCompare
+          version={selectedVersion}
+        />
       </div>
     </div>
   );
