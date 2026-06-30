@@ -9,6 +9,7 @@ import {
   Loader2,
   User,
 } from "lucide-react";
+import toast from "react-hot-toast";
 
 interface Version {
   id: string;
@@ -35,11 +36,10 @@ export default function VersionHistory({
 
   async function loadVersions() {
     try {
-      const { data } = await api.get(
-        `/versions/${documentId}`
-      );
-
-      setVersions(data);
+   const { data } = await api.get(
+  `/versions?documentId=${documentId}`
+);
+      setVersions(data.versions ?? data);
     } catch (error) {
       console.error(error);
     } finally {
@@ -50,9 +50,9 @@ export default function VersionHistory({
   async function restoreVersion(id: string) {
     try {
       await api.post(
-        `/versions/${id}/restore`
-      );
-
+  `/versions/${id}/restore`
+);
+toast.success("Version restored");
       loadVersions();
     } catch (error) {
       console.error(error);

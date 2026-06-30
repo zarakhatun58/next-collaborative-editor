@@ -11,17 +11,20 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const router = useRouter();
 
-  const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
 
-  const res = await api.post("/auth/login", {
-    email,
-    password,
-  });
+  try {
+    const res = await api.post("/auth/login", {
+      email,
+      password,
+    });
 
-  localStorage.setItem("token", res.data.token);
-
-  router.replace("/dashboard");
+    localStorage.setItem("token", res.data.token);
+    router.replace("/dashboard");
+  } catch (err: any) {
+    console.log(err.response?.data);
+  }
 };
   return (
     <div className="w-full max-w-md rounded-3xl border border-white/10 bg-white/[0.04] p-8 backdrop-blur-3xl shadow-2xl shadow-violet-900/20">

@@ -19,19 +19,13 @@ export default function VersionTimeline({
 }: Props) {
 
 async function restore(id:string){
-
     try{
-
-        await api.post(
-            `/versions/${id}/restore`
-        );
-
+       await api.patch("/versions", {
+  versionId: id,
+});
         reload();
-
     }catch(err){
-
         console.log(err);
-
     }
 
 }

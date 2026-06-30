@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { Editor as TiptapEditor } from "@tiptap/react";
 
 import { api } from "@/src/lib/api";
-
+import { socket } from "@/src/lib/socket-client";
 import DocumentHeader from "@/src/components/editor/DocumentHeader/DocumentHeader";
 import Toolbar from "@/src/components/editor/toolbar";
 import Editor from "@/src/components/editor/editor";
@@ -21,46 +21,26 @@ export default function DocumentEditorPage() {
   const params = useParams();
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const documentId = params.id as string;
-
   const [editor, setEditor] =
     useState<TiptapEditor | null>(null);
-
   const [loading, setLoading] = useState(true);
-
   const [title, setTitle] = useState("");
-
   const [content, setContent] = useState("");
-
   const [saving, setSaving] = useState(false);
-
-  const [online, setOnline] = useState(
-    navigator.onLine
-  );
-const [syncing, setSyncing] = useState(false);
-const [queued] = useState(0);
-const [conflict] = useState(false);
-
-const [typingUsers] = useState([
-  {
-    id: "1",
-    name: "Rahul",
-  },
-]);
-  const [updatedAt, setUpdatedAt] =
-    useState("");
-
+  const [syncing, setSyncing] = useState(false);
+  const [queued] = useState(0);
+  const [conflict] = useState(false);
+  const [typingUsers] = useState([ {id: "1",name: "Rahul",},]);
+  const [updatedAt, setUpdatedAt] =useState("");
+ const [online, setOnline] = useState(true);
   const loadDocument = async () => {
     try {
       setLoading(true);
-
       const { data } = await api.get(
         `/documents/${documentId}`
       );
-
       setTitle(data.document.title);
-
       setContent(data.document.content);
-
       setUpdatedAt(data.document.updatedAt);
     } finally {
       setLoading(false);
@@ -69,36 +49,24 @@ const [typingUsers] = useState([
 
   useEffect(() => {
     if (!documentId) return;
-
+    socket.emit("join-document", documentId);
     loadDocument();
   }, [documentId]);
-
+ 
   useEffect(() => {
-    const onlineHandler = () => setOnline(true);
+    if (typeof window === "undefined") return;
 
-    const offlineHandler = () =>
-      setOnline(false);
+    setOnline(window.navigator.onLine);
 
-    window.addEventListener(
-      "online",
-      onlineHandler
-    );
+    const handleOnline = () => setOnline(true);
+    const handleOffline = () => setOnline(false);
 
-    window.addEventListener(
-      "offline",
-      offlineHandler
-    );
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
 
     return () => {
-      window.removeEventListener(
-        "online",
-        onlineHandler
-      );
-
-      window.removeEventListener(
-        "offline",
-        offlineHandler
-      );
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
     };
   }, []);
 

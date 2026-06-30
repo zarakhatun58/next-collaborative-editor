@@ -44,6 +44,21 @@ export async function PUT(
   return update(req, id);
 }
 
+// PATCH
+export async function PATCH(
+  req: NextRequest,
+  {
+    params,
+  }: {
+    params: Promise<{
+      id: string;
+    }>;
+  }
+) {
+  const { id } = await params;
+
+  return update(req, id);
+}
 // ========================
 // DELETE /api/documents/:id
 // ========================

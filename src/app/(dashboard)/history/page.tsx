@@ -2,37 +2,77 @@
 
 import { useEffect, useState } from "react";
 import { api } from "@/src/lib/api";
-import { useParams } from "next/navigation";
+
 import VersionTimeline from "@/src/components/history/version-timeline";
 import VersionCompare from "@/src/components/history/version-compare";
 
-export default function HistoryPage() {
-  const [versions, setVersions] = useState([]);
-  const [selectedVersion, setSelectedVersion] = useState<any>(null);
-const params = useParams();
-  const documentId = params.id as string;
+interface Document {
+  id: string;
+  title: string;
+}
 
+export default function HistoryPage() {
+  const [documents, setDocuments] = useState<Document[]>([]);
+  const [selectedDocument, setSelectedDocument] =
+    useState<Document | null>(null);
+
+  const [versions, setVersions] = useState<any[]>([]);
+  const [selectedVersion, setSelectedVersion] =
+    useState<any>(null);
+
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    loadVersions();
+    loadDocuments();
   }, []);
 
-  async function loadVersions() {
+  useEffect(() => {
+    if (selectedDocument) {
+      loadVersions(selectedDocument.id);
+    }
+  }, [selectedDocument]);
+
+  async function loadDocuments() {
     try {
-      const { data } = await api.get(
+      const { data } = await api.get("/documents");
+
+      const docs = data.documents ?? data;
+
+      setDocuments(docs);
+
+      if (docs.length > 0) {
+        setSelectedDocument(docs[0]);
+      }
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function loadVersions(documentId: string) {
+    try {
+     const { data } = await api.get(
         `/versions?documentId=${documentId}`
       );
 
-      setVersions(data);
+      const items = data.versions ?? data;
 
-      if (data.length) {
-        setSelectedVersion(data[0]);
+      setVersions(items);
+
+      if (items.length > 0) {
+        setSelectedVersion(items[0]);
+      } else {
+        setSelectedVersion(null);
       }
     } catch (err) {
       console.error(err);
     }
   }
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
   return (
     <div className="space-y-8">
       <div>
@@ -50,7 +90,10 @@ const params = useParams();
           versions={versions}
           selected={selectedVersion}
           onSelect={setSelectedVersion}
-          reload={loadVersions}
+          reload={() =>
+            selectedDocument &&
+            loadVersions(selectedDocument.id)
+          }
         />
 
         <VersionCompare
