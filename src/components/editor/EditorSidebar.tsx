@@ -55,7 +55,7 @@ export default function EditorSidebar({
 
       <VersionHistory documentId={""} />
 
-      <Collaborators />
+      <Collaborators users={[]} />
 
     </div>
   );
