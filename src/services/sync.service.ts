@@ -1,6 +1,6 @@
 import { prisma } from "@/src/config/prisma";
 import { Prisma, SyncOperationType } from "@prisma/client";
-
+import { mergeDocument } from "@/src/services/merge.service";
 // ===============================
 // Create Sync Operation
 // ===============================
@@ -10,14 +10,21 @@ export async function createSyncOperation(
   userId: string,
   operationType: SyncOperationType,
   payload: Prisma.InputJsonValue,
+  baseVersion: number,
+  clientVersion: number,
   clientTimestamp: Date
 ) {
-  // Check permission
+  // ---------------------------------
+  // Permission
+  // ---------------------------------
+
   const document = await prisma.document.findFirst({
     where: {
       id: documentId,
       OR: [
-        { ownerId: userId },
+        {
+          ownerId: userId,
+        },
         {
           members: {
             some: {
@@ -36,14 +43,104 @@ export async function createSyncOperation(
     throw new Error("Access denied.");
   }
 
-  return prisma.syncOperation.create({
-    data: {
-      documentId,
-      operationType,
-      payload,
-      clientTimestamp,
+  // ---------------------------------
+  // Current document
+  // ---------------------------------
+
+  const currentDocument = await prisma.document.findUnique({
+    where: {
+      id: documentId,
     },
   });
+
+  if (!currentDocument) {
+    throw new Error("Document not found.");
+  }
+
+  const incoming = payload as {
+    title: string;
+    content: string;
+  };
+
+  let finalContent = incoming.content;
+
+  // ---------------------------------
+  // Conflict Detection
+  // ---------------------------------
+
+  if (baseVersion !== currentDocument.version) {
+
+    const serverContent =
+      typeof currentDocument.content === "string"
+        ? currentDocument.content
+        : JSON.stringify(currentDocument.content);
+
+    const merge = mergeDocument({
+      baseContent: serverContent,
+      localContent: incoming.content,
+      remoteContent: serverContent,
+    });
+
+    finalContent = merge.mergedContent;
+
+    if (merge.conflict) {
+
+      await prisma.conflict.create({
+        data: {
+          documentId,
+
+          localContent:
+            incoming.content as Prisma.InputJsonValue,
+
+          remoteContent:
+            (currentDocument.content ??
+              Prisma.JsonNull) as Prisma.InputJsonValue | typeof Prisma.JsonNull,
+        },
+      });
+
+    }
+
+  }
+
+  // ---------------------------------
+  // Update document
+  // ---------------------------------
+
+  const updatedDocument =
+    await prisma.document.update({
+      where: {
+        id: documentId,
+      },
+      data: {
+        title: incoming.title,
+        content: finalContent as Prisma.InputJsonValue,
+        version: {
+          increment: 1,
+        },
+        lastEditedBy: userId,
+      },
+    });
+
+  // ---------------------------------
+  // Save Sync Operation
+  // ---------------------------------
+
+  const operation =
+    await prisma.syncOperation.create({
+      data: {
+        documentId,
+        operationType,
+        payload,
+        clientTimestamp,
+        processed: true,
+        serverTimestamp: new Date(),
+      },
+    });
+
+  return {
+    operation,
+    document: updatedDocument,
+  };
 }
 
 // ===============================
@@ -197,7 +294,44 @@ export async function getConflicts(
     },
   });
 }
+// ===============================
+// Get All Conflicts
+// ===============================
 
+export async function getAllConflicts(
+  userId: string
+) {
+  return prisma.conflict.findMany({
+    where: {
+      resolved: false,
+      document: {
+        OR: [
+          {
+            ownerId: userId,
+          },
+          {
+            members: {
+              some: {
+                userId,
+              },
+            },
+          },
+        ],
+      },
+    },
+    include: {
+      document: {
+        select: {
+          id: true,
+          title: true,
+        },
+      },
+    },
+    orderBy: {
+      createdAt: "desc",
+    },
+  });
+}
 // ===============================
 // Resolve Conflict
 // ===============================

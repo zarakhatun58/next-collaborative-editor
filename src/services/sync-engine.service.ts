@@ -1,49 +1,51 @@
-import axios from "axios";
+import { api } from "@/src/lib/api";
+import { db } from "@/src/lib/db";
 
-import {
-  getPendingOperations,
-  markSynced,
-} from "./offline.service";
+export async function syncQueue() {
+  if (typeof window === "undefined") return;
+  if (!navigator.onLine) return;
 
-const API =
-  process.env.NEXT_PUBLIC_API_URL ??
-  "/api";
+  const pending = await db.syncQueue
+    .filter(item => !item.synced)
+    .toArray();
 
-export async function syncQueue(
-  token: string
-) {
-  const queue =
-    await getPendingOperations();
-
-  for (const item of queue) {
+  for (const item of pending) {
     try {
-      await axios.post(
-        `${API}/sync`,
-        {
-          documentId:
-            item.documentId,
+      // Create sync operation
+      await api.post("/sync", {
+        documentId: item.documentId,
+        operationType: item.operation,
+        payload: item.payload,
+        baseVersion: item.baseVersion,
+        clientVersion: item.clientVersion,
+        clientTimestamp: item.createdAt,
+      });
 
-          operation:
-            item.operation,
+      // Process queue on server
+      const { data } = await api.post("/sync/process", {
+        documentId: item.documentId,
+      });
 
-          payload:
-            item.payload,
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (item.id !== undefined) {
-        await markSynced(item.id);
+      // Update local document if returned
+      if (data.document) {
+        await db.documents.put({
+          id: data.document.id,
+          title: data.document.title,
+          content: data.document.content,
+          version: data.document.version,
+          synced: true,
+          updatedAt: Date.now(),
+        });
       }
-    } catch (error) {
-      console.error(
-        "Sync failed",
-        error
-      );
+
+      if (item.id) {
+        await db.syncQueue.update(item.id, {
+          synced: true,
+        });
+      }
+    } catch (err) {
+      console.error("Sync failed", err);
+      break;
     }
   }
 }

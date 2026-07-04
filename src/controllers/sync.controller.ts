@@ -7,6 +7,7 @@ import {
   processQueue,
   createConflict,
   getConflicts,
+   getAllConflicts,
   resolveConflict,
 } from "@/src/services/sync.service";
 
@@ -23,13 +24,15 @@ export async function create(req: NextRequest) {
 
     const body = await req.json();
 
-    const operation = await createSyncOperation(
-      body.documentId,
-      user.id,
-      body.operationType as SyncOperationType,
-      body.payload as Prisma.InputJsonValue,
-      new Date(body.clientTimestamp)
-    );
+   const operation = await createSyncOperation(
+  body.documentId,
+  user.id,
+  body.operationType,
+  body.payload,
+  body.baseVersion,
+  body.clientVersion,
+  new Date(body.clientTimestamp)
+);
 
     return NextResponse.json(
       {
@@ -195,15 +198,9 @@ export async function conflicts(
     const documentId =
       req.nextUrl.searchParams.get("documentId");
 
-    if (!documentId) {
-      throw new Error("Document ID is required");
-    }
-
-    const result =
-      await getConflicts(
-        documentId,
-        user.id
-      );
+    const result = documentId
+      ? await getConflicts(documentId, user.id)
+      : await getAllConflicts(user.id);
 
     return NextResponse.json({
       success: true,
