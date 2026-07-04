@@ -1,38 +1,30 @@
-import { Server } from "socket.io";
+// src/lib/socket.ts
 
-let io: Server;
+export const SOCKET_EVENTS = {
+  JOIN_DOCUMENT: "join-document",
+  LEAVE_DOCUMENT: "leave-document",
+  DOCUMENT_UPDATE: "document-update",
+  RECEIVE_UPDATE: "receive-update",
+  USER_TYPING: "user-typing",
+  USER_STOPPED_TYPING: "user-stopped-typing",
+  CURSOR_MOVE: "cursor-move",
+} as const;
 
-export function initSocket(server: any) {
-  if (io) return io;
+export interface DocumentUpdatePayload {
+  documentId: string;
+  content: string;
+  version: number;
+  userId: string;
+}
 
-  io = new Server(server, {
-    cors: {
-      origin: "*",
-    },
-  });
+export interface CursorPayload {
+  documentId: string;
+  userId: string;
+  x: number;
+  y: number;
+}
 
-  io.on("connection", (socket) => {
-    console.log("User connected:", socket.id);
-
-    socket.on("join-document", (documentId: string) => {
-      socket.join(documentId);
-
-      console.log(`${socket.id} joined ${documentId}`);
-    });
-
-    socket.on(
-      "document-update",
-      ({ documentId, content }) => {
-        socket
-          .to(documentId)
-          .emit("receive-update", content);
-      }
-    );
-
-    socket.on("disconnect", () => {
-      console.log("Disconnected");
-    });
-  });
-
-  return io;
+export interface TypingPayload {
+  documentId: string;
+  userId: string;
 }

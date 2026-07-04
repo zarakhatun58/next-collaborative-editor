@@ -4,7 +4,7 @@ import { Pencil } from "lucide-react";
 
 interface User {
   id: string;
-  name: string;
+  typing: boolean;
 }
 
 interface Props {
@@ -14,7 +14,14 @@ interface Props {
 export default function TypingIndicator({
   users,
 }: Props) {
-  if (!users.length) return null;
+
+  const active = users.filter(
+    (u) => u.typing
+  );
+
+  if (active.length === 0) {
+    return null;
+  }
 
   return (
     <div className="glass-card flex items-center gap-3 rounded-2xl px-4 py-3">
@@ -26,11 +33,9 @@ export default function TypingIndicator({
 
       <span className="text-sm text-zinc-300">
 
-        {users.map((u) => u.name).join(", ")}
-
-        {users.length === 1
-          ? " is typing..."
-          : " are typing..."}
+        {active.length === 1
+          ? "Someone is typing..."
+          : `${active.length} people are typing...`}
 
       </span>
 

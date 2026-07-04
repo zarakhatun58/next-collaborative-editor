@@ -3,9 +3,10 @@
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Editor as TiptapEditor } from "@tiptap/react";
-
+import Cursor from "@/src/components/editor/Cursor";
+import { useRef } from "react";
 import { api } from "@/src/lib/api";
-import { socket } from "@/src/lib/socket-client";
+import { getSocket } from "@/src/lib/socket-client";
 import DocumentHeader from "@/src/components/editor/DocumentHeader/DocumentHeader";
 import Toolbar from "@/src/components/editor/toolbar";
 import Editor from "@/src/components/editor/editor";
@@ -19,10 +20,12 @@ import SyncStatus from "@/src/components/editor/DocumentHeader/sync-status";
 
 export default function DocumentEditorPage() {
   const params = useParams();
+  const initialized = useRef(false);
+  const [editor, setEditor] = useState<TiptapEditor | null>(null);
+  const [version, setVersion] = useState(1);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
+  const socket = useRef<ReturnType<typeof getSocket> | null>(null);
   const documentId = params.id as string;
-  const [editor, setEditor] =
-    useState<TiptapEditor | null>(null);
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
@@ -30,9 +33,17 @@ export default function DocumentEditorPage() {
   const [syncing, setSyncing] = useState(false);
   const [queued] = useState(0);
   const [conflict] = useState(false);
-  const [typingUsers] = useState([ {id: "1",name: "Rahul",},]);
-  const [updatedAt, setUpdatedAt] =useState("");
- const [online, setOnline] = useState(true);
+  const [typingUsers, setTypingUsers] = useState<{ id: string; typing: boolean; }[]>([]);
+  const [onlineUsers, setOnlineUsers] = useState<{ id: string; email: string; }[]>([]);
+  const [cursors, setCursors] = useState<{
+    id: string;
+    name: string;
+    color: string;
+    x: number;
+    y: number;
+  }[]>([]);
+  const [updatedAt, setUpdatedAt] = useState("");
+  const [online, setOnline] = useState(true);
   const loadDocument = async () => {
     try {
       setLoading(true);
@@ -41,6 +52,7 @@ export default function DocumentEditorPage() {
       );
       setTitle(data.document.title);
       setContent(data.document.content);
+      setVersion(data.document.version);
       setUpdatedAt(data.document.updatedAt);
     } finally {
       setLoading(false);
@@ -49,10 +61,115 @@ export default function DocumentEditorPage() {
 
   useEffect(() => {
     if (!documentId) return;
-    socket.emit("join-document", documentId);
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    socket.current = getSocket(token);
+    socket.current.emit("join-document", {
+      documentId,
+    });
     loadDocument();
+    socket.current?.on("typing", (
+      data: {
+        userId: string;
+        typing: boolean;
+      }
+    ) => {
+
+      setTypingUsers(prev => {
+
+        const others = prev.filter(
+          u => u.id !== data.userId
+        );
+
+        if (!data.typing) {
+          return others;
+        }
+
+        return [
+          ...others,
+          {
+            id: data.userId,
+            typing: true,
+          },
+        ];
+
+      });
+
+    }
+    );
+    socket.current.on("receive-update",
+      (data: {
+        content: string;
+        version: number;
+        userId: string;
+      }) => {
+        setContent(data.content);
+        setVersion(data.version);
+      }
+    );
+    socket.current.on("user-joined", (user) => {
+      console.log("Joined", user);
+    });
+    socket.current?.on("presence",
+      (
+        users: {
+          id: string;
+          email: string;
+        }[]
+      ) => {
+        setOnlineUsers(users);
+      }
+    );
+    socket.current?.on("cursor-move", (
+      cursor: {
+        id: string;
+        name: string;
+        color: string;
+        x: number;
+        y: number;
+      }
+    ) => {
+      setCursors((prev) => {
+        const others = prev.filter(
+          (c) => c.id !== cursor.id
+        );
+
+        return [...others, cursor];
+      });
+    }
+    );
+    return () => {
+      socket.current?.emit("leave-document", {
+        documentId,
+      });
+
+      socket.current?.off("receive-update");
+      socket.current?.off("user-joined");
+      socket.current?.off("user-left");
+      socket.current?.off("presence");
+      socket.current?.off("typing");
+      socket.current?.off("cursor-move");
+    };
   }, [documentId]);
- 
+
+  useEffect(() => {
+    if (!documentId) return;
+
+    socket.current?.emit("typing", {
+      documentId,
+      typing: true,
+    });
+
+    const timer = setTimeout(() => {
+      socket.current?.emit("typing", {
+        documentId,
+        typing: false,
+      });
+    }, 700);
+
+    return () => clearTimeout(timer);
+  }, [content]);
+
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -84,17 +201,39 @@ export default function DocumentEditorPage() {
             content,
           }
         );
-
+        setVersion((v) => v + 1);
         setUpdatedAt(new Date().toISOString());
       } finally {
         setSaving(false);
       }
+
     }, 1000);
 
     return () => clearTimeout(timer);
 
   }, [title, content]);
+  useEffect(() => {
+    if (!socket) return;
 
+    const move = (e: MouseEvent) => {
+      socket.current?.emit("cursor-move", {
+        documentId,
+        x: e.clientX,
+        y: e.clientY,
+      });
+    };
+
+    window.addEventListener(
+      "mousemove",
+      move
+    );
+
+    return () =>
+      window.removeEventListener(
+        "mousemove",
+        move
+      );
+  }, [socket, documentId]);
   if (loading) {
     return (
       <div className="glass-card flex h-[600px] items-center justify-center rounded-3xl">
@@ -123,6 +262,8 @@ export default function DocumentEditorPage() {
 
         <Editor
           content={content}
+          documentId={documentId}
+          socket={socket.current}
           onChange={setContent}
           onEditorReady={setEditor}
         />
@@ -148,7 +289,16 @@ export default function DocumentEditorPage() {
 
           <VersionHistory documentId={documentId} />
 
-          <Collaborators />
+          <Collaborators users={onlineUsers} />
+          {cursors.map((cursor) => (
+            <Cursor
+              key={cursor.id}
+              x={cursor.x}
+              y={cursor.y}
+              name={cursor.name}
+              color={cursor.color}
+            />
+          ))}
 
         </div>
 
