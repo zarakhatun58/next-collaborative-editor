@@ -63,14 +63,28 @@ export async function getAll(
   try {
     const user = await getCurrentUser(req);
 
+    const search =
+      req.nextUrl.searchParams.get("search") ??
+      "";
+
     const documents =
-      await getDocuments(user.id);
+      await getDocuments(
+        user.id,
+        search
+      );
 
     return NextResponse.json({
       success: true,
       documents,
     });
+
   } catch (error) {
+
+    console.error(
+      "Get Documents Error:",
+      error
+    );
+
     return NextResponse.json(
       {
         success: false,
@@ -127,7 +141,11 @@ export async function update(
 
     const body = await req.json();
 
+    console.log("PATCH BODY:", body);
+
     const data = updateDocumentSchema.parse(body);
+
+    console.log("PARSED DATA:", data);
 
     const document = await updateDocument(
       id,
@@ -143,6 +161,9 @@ export async function update(
       document,
     });
   } catch (error) {
+    console.error("UPDATE DOCUMENT ERROR");
+    console.error(error);
+
     return NextResponse.json(
       {
         success: false,

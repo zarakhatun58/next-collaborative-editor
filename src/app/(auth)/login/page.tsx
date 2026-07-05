@@ -56,7 +56,7 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
 
         <button
           type="submit"
-          className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-cyan-600 py-3 font-semibold"
+          className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-cyan-600 py-3 font-semibold cursor-pointer"
         >
           Login
         </button>
@@ -74,7 +74,7 @@ const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         Don't have an account?{" "}
         <Link
           href="/register"
-          className="text-violet-400"
+          className="text-violet-400 cursor-pointer"
         >
           Register
         </Link>

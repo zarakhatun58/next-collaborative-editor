@@ -33,9 +33,11 @@ export async function GET(
 }
 
 
-export async function POST(
-  req: NextRequest
-) {
+export async function POST(req: NextRequest) {
+  const limited = rateLimit(req as any);
+
+  if (limited) return limited;
+
   const body = await req.json();
 
   if (!body.documentId) {
@@ -47,16 +49,8 @@ export async function POST(
       { status: 400 }
     );
   }
-  const newReq = new NextRequest(req.url, {
-    method: "POST",
-    headers: req.headers,
-    body: JSON.stringify(body),
-  });
- const limited = rateLimit(req as any);
-  if (limited) {
-    return limited;
-  }
-  return create(newReq, body.documentId);
+
+  return create(req, body.documentId);
 }
 
 export async function PATCH(

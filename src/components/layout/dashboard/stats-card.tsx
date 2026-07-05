@@ -26,7 +26,6 @@ export default function StatsCard({
       className="group relative overflow-hidden rounded-3xl border border-white/10 bg-white/5 p-6 backdrop-blur-xl"
     >
       <div className="absolute inset-0 bg-gradient-to-r from-violet-500/0 via-violet-500/5 to-cyan-500/0 opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-
       <div className="relative flex items-start justify-between">
         <div>
           <p className="text-sm text-zinc-400">

@@ -128,6 +128,7 @@ export default function DocumentEditor({
 
       <FloatingToolbar
         editor={editor}
+        documentId={documentId}
       />
 
     </div>

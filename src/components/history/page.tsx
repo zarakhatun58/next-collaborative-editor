@@ -8,7 +8,7 @@ import VersionTimeline from "./version-timeline";
 
 export default function HistoryPage() {
   const params = useParams();
-    const documentId = params.id as string;
+  const documentId = params.id as string;
 
   const [versions, setVersions] = useState<any[]>([]);
   const [selectedVersion, setSelectedVersion] = useState<any>(null);
@@ -55,6 +55,7 @@ export default function HistoryPage() {
 
         <VersionCompare
           version={selectedVersion}
+          onRestore={loadVersions}
         />
       </div>
     </div>

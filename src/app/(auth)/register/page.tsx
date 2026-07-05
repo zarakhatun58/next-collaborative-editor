@@ -75,7 +75,7 @@ const router = useRouter();
 
         <button
           type="submit"
-          className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-cyan-600 py-3 font-semibold"
+          className="w-full rounded-xl bg-gradient-to-r from-violet-600 to-cyan-600 py-3 font-semibold cursor-pointer"
         >
           Create Account
         </button>
@@ -85,7 +85,7 @@ const router = useRouter();
         Already have an account?{" "}
         <Link
           href="/login"
-          className="text-violet-400"
+          className="text-violet-400 cursor-pointer"
         >
           Login
         </Link>

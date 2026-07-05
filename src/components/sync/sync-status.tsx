@@ -10,7 +10,13 @@ export default function SyncStatus() {
   const [online, setOnline] = useState(true);
   const [pending, setPending] = useState(0);
   const [lastSync, setLastSync] = useState<string>("Never");
-
+  const [status, setStatus] = useState<
+    "offline" |
+    "saving" |
+    "syncing" |
+    "synced" |
+    "error"
+  >("synced");
   useEffect(() => {
     setOnline(navigator.onLine);
     const handleOnline = () => setOnline(true);
@@ -31,6 +37,14 @@ export default function SyncStatus() {
       .filter((item) => !item.synced)
       .toArray();
     setPending(queue.length);
+
+    if (!navigator.onLine) {
+      setStatus("offline");
+    } else if (queue.length > 0) {
+      setStatus("syncing");
+    } else {
+      setStatus("synced");
+    }
     const synced = await db.syncQueue
       .filter((item) => item.synced)
       .toArray();
@@ -69,8 +83,23 @@ export default function SyncStatus() {
             Network
           </p>
 
-          <p className="text-xl font-bold">
-            {online ? "Online" : "Offline"}
+          <p
+            className={`text-xl font-bold ${status === "offline"
+                ? "text-red-500"
+                : status === "syncing"
+                  ? "text-yellow-400"
+                  : status === "saving"
+                    ? "text-blue-400"
+                    : status === "error"
+                      ? "text-red-500"
+                      : "text-green-400"
+              }`}
+          >
+            {status === "offline" && "Offline"}
+            {status === "saving" && "Saving..."}
+            {status === "syncing" && "Syncing..."}
+            {status === "synced" && "Synced"}
+            {status === "error" && "Sync Failed"}
           </p>
         </div>
 

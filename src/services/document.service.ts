@@ -1,4 +1,5 @@
 import { prisma } from "../config/prisma";
+import { Prisma } from "@prisma/client";
 
 export async function createDocument(
   title: string,
@@ -21,23 +22,38 @@ export async function createDocument(
 }
 
 export async function getDocuments(
-  userId: string
+  userId: string,
+  search?: string
 ) {
   return prisma.document.findMany({
     where: {
-      OR: [
+      AND: [
         {
-          ownerId: userId,
-        },
-        {
-          members: {
-            some: {
-              userId,
+          OR: [
+            {
+              ownerId: userId,
             },
-          },
+            {
+              members: {
+                some: {
+                  userId,
+                },
+              },
+            },
+          ],
         },
+
+        search
+          ? {
+              title: {
+                contains: search,
+                mode: "insensitive",
+              },
+            }
+          : {},
       ],
     },
+
     include: {
       owner: {
         select: {
@@ -46,6 +62,7 @@ export async function getDocuments(
           email: true,
         },
       },
+
       members: {
         include: {
           user: {
@@ -58,6 +75,7 @@ export async function getDocuments(
         },
       },
     },
+
     orderBy: {
       updatedAt: "desc",
     },
@@ -149,7 +167,27 @@ export async function updateDocument(
     );
   }
 
-  return prisma.document.update({
+  // -----------------------------
+  // SAVE CURRENT VERSION
+  // -----------------------------
+await prisma.documentVersion.create({
+  data: {
+    documentId,
+    createdById: userId,
+    name: `Version ${document.version}`,
+    content:
+      (document.content ??
+        Prisma.JsonNull) as
+        | Prisma.InputJsonValue
+        | typeof Prisma.JsonNull,
+  },
+});
+
+  // -----------------------------
+  // UPDATE DOCUMENT
+  // -----------------------------
+const updatedDocument =
+  await prisma.document.update({
     where: {
       id: documentId,
     },
@@ -160,9 +198,27 @@ export async function updateDocument(
       ...(data.content !== undefined && {
         content: data.content,
       }),
+      version: {
+        increment: 1,
+      },
       lastEditedBy: userId,
     },
   });
+
+await prisma.documentVersion.create({
+  data: {
+    documentId,
+    createdById: userId,
+    name: `Version ${updatedDocument.version}`,
+    content:
+      (updatedDocument.content ??
+        Prisma.JsonNull) as
+        | Prisma.InputJsonValue
+        | typeof Prisma.JsonNull,
+  },
+});
+
+return updatedDocument;
 }
 
 export async function deleteDocument(

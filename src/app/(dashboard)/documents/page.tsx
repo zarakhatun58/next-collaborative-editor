@@ -72,7 +72,7 @@ export default function DocumentsPage() {
 
         <button
           onClick={createDocument}
-          className="flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-600 px-5 py-3 font-semibold"
+          className=" cursor-pointer flex items-center gap-2 rounded-xl bg-gradient-to-r from-violet-600 to-cyan-600 px-5 py-3 font-semibold"
         >
           <Plus size={18} />
           New Document

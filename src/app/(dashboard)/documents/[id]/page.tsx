@@ -21,6 +21,7 @@ import SyncStatus from "@/src/components/editor/DocumentHeader/sync-status";
 export default function DocumentEditorPage() {
   const params = useParams();
   const initialized = useRef(false);
+  const [loaded, setLoaded] = useState(false);
   const [editor, setEditor] = useState<TiptapEditor | null>(null);
   const [version, setVersion] = useState(1);
   const [saveStatus, setSaveStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
@@ -54,6 +55,7 @@ export default function DocumentEditorPage() {
       setContent(data.document.content);
       setVersion(data.document.version);
       setUpdatedAt(data.document.updatedAt);
+      setLoaded(true);
     } finally {
       setLoading(false);
     }
@@ -186,32 +188,35 @@ export default function DocumentEditorPage() {
       window.removeEventListener("offline", handleOffline);
     };
   }, []);
-
   useEffect(() => {
-    if (!documentId) return;
+    if (!documentId || !loaded) return;
+
+    if (!initialized.current) {
+      initialized.current = true;
+      return;
+    }
 
     const timer = setTimeout(async () => {
       try {
         setSaving(true);
 
-        await api.patch(
-          `/documents/${documentId}`,
-          {
-            title,
-            content,
-          }
-        );
+        await api.patch(`/documents/${documentId}`, {
+          title,
+          content,
+        });
+
         setVersion((v) => v + 1);
         setUpdatedAt(new Date().toISOString());
+      } catch (error) {
+        console.error(error);
       } finally {
         setSaving(false);
       }
-
     }, 1000);
 
     return () => clearTimeout(timer);
+  }, [title, content, loaded]);
 
-  }, [title, content]);
   useEffect(() => {
     if (!socket) return;
 

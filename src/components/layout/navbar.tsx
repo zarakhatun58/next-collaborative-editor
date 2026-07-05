@@ -3,8 +3,6 @@
 import Link from "next/link";
 import { motion } from "framer-motion";
 import {
-  Bell,
-  Search,
   Wifi,
   WifiOff,
   FileText,
@@ -12,6 +10,9 @@ import {
 } from "lucide-react";
 import { useEffect, useState } from "react";
 import LogoutButton from "../logout-button";
+import SearchBox from "./SearchBox";
+import NotificationDropdown from "./NotificationDropdown";
+import ProfileDropdown from "./ProfileDropdown";
 
 export default function Navbar() {
   const [isOnline, setIsOnline] = useState(true);
@@ -19,13 +20,10 @@ export default function Navbar() {
 
   useEffect(() => {
     setIsOnline(navigator.onLine);
-
     const onlineHandler = () => setIsOnline(true);
     const offlineHandler = () => setIsOnline(false);
-
     window.addEventListener("online", onlineHandler);
     window.addEventListener("offline", offlineHandler);
-
     return () => {
       window.removeEventListener("online", onlineHandler);
       window.removeEventListener("offline", offlineHandler);
@@ -56,14 +54,7 @@ export default function Navbar() {
 
         {/* Search */}
         <div className="hidden md:flex w-full max-w-md mx-8">
-          <div className="relative w-full">
-            <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
-
-            <input
-              placeholder="Search documents..."
-              className="w-full rounded-xl border border-white/10 bg-white/5 py-2 pl-10 pr-4 text-white outline-none transition-all focus:border-violet-500"
-            />
-          </div>
+          <SearchBox />
         </div>
 
         {/* Right Side */}
@@ -88,15 +79,9 @@ export default function Navbar() {
           </div>
 
           {/* Notifications */}
-          <button className="rounded-xl p-2 transition hover:bg-white/10">
-            <Bell className="h-5 w-5 text-white" />
-          </button>
-          <LogoutButton />
+          <NotificationDropdown />
           {/* Avatar */}
-          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 flex items-center justify-center text-white font-bold">
-            JK
-          </div>
-
+          <ProfileDropdown />
           {/* Mobile Menu */}
           <button
             className="md:hidden"

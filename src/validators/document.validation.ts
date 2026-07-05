@@ -12,10 +12,7 @@ export const createDocumentSchema = z.object({
 });
 
 export const updateDocumentSchema = z.object({
-  title: z
-    .string()
-    .min(3)
-    .optional(),
+  title: z.string().trim().min(3).optional(),
 
   content: z
     .string()
