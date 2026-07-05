@@ -1,8 +1,6 @@
 import { z } from "zod";
 
-// ===============================
-// Create Conflict
-// ===============================
+
 
 export const createConflictSchema = z.object({
   documentId: z.string().uuid(),
@@ -12,9 +10,6 @@ export const createConflictSchema = z.object({
   remoteContent: z.any(),
 });
 
-// ===============================
-// Resolve Conflict
-// ===============================
 
 export const resolveConflictSchema = z.object({
   conflictId: z.string().uuid(),

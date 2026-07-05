@@ -1,9 +1,6 @@
 import { prisma } from "@/src/config/prisma";
 import { Prisma } from "@prisma/client";
 
-// ===============================
-// Create Version Snapshot
-// ===============================
 
 export async function createVersion(
   documentId: string,
@@ -46,10 +43,6 @@ export async function createVersion(
     },
   });
 }
-
-// ===============================
-// Get All Versions
-// ===============================
 
 export async function getVersions(
   documentId: string,
@@ -94,10 +87,6 @@ export async function getVersions(
   });
 }
 
-// ===============================
-// Get One Version
-// ===============================
-
 export async function getVersionById(
   versionId: string,
   userId: string
@@ -135,10 +124,6 @@ export async function getVersionById(
 
   return version;
 }
-
-// ===============================
-// Restore Version
-// ===============================
 
 export async function restoreVersion(
   versionId: string,
@@ -181,10 +166,6 @@ export async function restoreVersion(
   },
 });
 }
-
-// ===============================
-// Delete Version
-// ===============================
 
 export async function deleteVersion(
   versionId: string,

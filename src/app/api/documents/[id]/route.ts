@@ -5,10 +5,8 @@ import {
   update,
   remove,
 } from "@/src/controllers/document.controller";
+import { rateLimit } from "@/src/middleware/rate-limit.middleware";
 
-// ========================
-// GET /api/documents/:id
-// ========================
 
 export async function GET(
   req: NextRequest,
@@ -21,13 +19,14 @@ export async function GET(
   }
 ) {
   const { id } = await params;
+  const limited = rateLimit(req as any);
+  if (limited) {
+    return limited;
+  }
 
   return getOne(req, id);
 }
 
-// ========================
-// PUT /api/documents/:id
-// ========================
 
 export async function PUT(
   req: NextRequest,
@@ -44,7 +43,6 @@ export async function PUT(
   return update(req, id);
 }
 
-// PATCH
 export async function PATCH(
   req: NextRequest,
   {
@@ -59,9 +57,6 @@ export async function PATCH(
 
   return update(req, id);
 }
-// ========================
-// DELETE /api/documents/:id
-// ========================
 
 export async function DELETE(
   req: NextRequest,

@@ -49,21 +49,12 @@ export function mergeDocument({
     };
   }
 
-  // ---------------------------------
-  // Only remote changed
-  // ---------------------------------
-
   if (baseContent === localContent) {
     return {
       mergedContent: remoteContent,
       conflict: false,
     };
   }
-
-  // ---------------------------------
-  // Same edit from both users
-  // ---------------------------------
-
   if (localContent === remoteContent) {
     return {
       mergedContent: localContent,
@@ -104,11 +95,6 @@ export function mergeDocument({
       conflict: false,
     };
   }
-
-  // ---------------------------------
-  // Remote extends local
-  // ---------------------------------
-
   if (remoteContent.startsWith(localContent)) {
     return {
       mergedContent: remoteContent,
@@ -116,21 +102,12 @@ export function mergeDocument({
     };
   }
 
-  // ---------------------------------
-  // Local extends remote
-  // ---------------------------------
-
   if (localContent.startsWith(remoteContent)) {
     return {
       mergedContent: localContent,
       conflict: false,
     };
   }
-
-  // ---------------------------------
-  // True conflict
-  // ---------------------------------
-
   return {
     conflict: true,
     mergedContent: [

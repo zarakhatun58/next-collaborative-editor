@@ -28,9 +28,6 @@ import {
    explainSchema,
 } from "@/src/validators/ai.validation";
 
-// ===============================
-// Summarize
-// ===============================
 
 export async function summarize(
   req: NextRequest
@@ -64,9 +61,6 @@ export async function summarize(
   }
 }
 
-// ===============================
-// Rewrite
-// ===============================
 
 export async function rewrite(
   req: NextRequest
@@ -100,9 +94,6 @@ export async function rewrite(
   }
 }
 
-// ===============================
-// Improve Writing
-// ===============================
 
 export async function improve(
   req: NextRequest
@@ -136,10 +127,6 @@ export async function improve(
   }
 }
 
-// ===============================
-// Grammar
-// ===============================
-
 export async function grammar(
   req: NextRequest
 ) {
@@ -171,9 +158,7 @@ export async function grammar(
     );
   }
 }
-// ===============================
-// Continue Writing
-// ===============================
+
 
 export async function continueText(
   req: NextRequest
@@ -206,9 +191,7 @@ export async function continueText(
     );
   }
 }
-// ===============================
-// Generate Title
-// ===============================
+
 
 export async function title(
   req: NextRequest
@@ -241,9 +224,7 @@ export async function title(
     );
   }
 }
-// ===============================
-// Translate
-// ===============================
+
 
 export async function translate(
   req: NextRequest
@@ -279,9 +260,7 @@ export async function translate(
     );
   }
 }
-// ===============================
-// Bullet Points
-// ===============================
+
 
 export async function bullets(
   req: NextRequest
@@ -313,9 +292,7 @@ export async function bullets(
     );
   }
 }
-// ===============================
-// Change Tone
-// ===============================
+
 
 export async function tone(
   req: NextRequest
@@ -349,9 +326,7 @@ export async function tone(
     );
   }
 }
-// ===============================
-// Simplify Text
-// ===============================
+
 
 export async function simplify(
   req: NextRequest
@@ -384,9 +359,7 @@ export async function simplify(
     );
   }
 }
-// ===============================
-// Explain Text
-// ===============================
+
 
 export async function explain(
   req: NextRequest

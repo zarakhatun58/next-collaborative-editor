@@ -11,7 +11,6 @@ export async function syncQueue() {
 
   for (const item of pending) {
     try {
-      // Create sync operation
       await api.post("/sync", {
         documentId: item.documentId,
         operationType: item.operation,

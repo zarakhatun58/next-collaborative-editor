@@ -5,10 +5,7 @@ import {
   getAll,
   restore,
 } from "@/src/controllers/version.controller";
-
-// ====================================
-// GET /api/versions?documentId=xxx
-// ====================================
+import { rateLimit } from "@/src/middleware/rate-limit.middleware";
 
 export async function GET(
   req: NextRequest
@@ -27,13 +24,14 @@ export async function GET(
       { status: 400 }
     );
   }
+  const limited = rateLimit(req as any);
 
+  if (limited) {
+    return limited;
+  }
   return getAll(req, documentId);
 }
 
-// ====================================
-// POST /api/versions
-// ====================================
 
 export async function POST(
   req: NextRequest
@@ -49,21 +47,17 @@ export async function POST(
       { status: 400 }
     );
   }
-
-  // create() also needs body.content,
-  // so recreate the request after reading it.
   const newReq = new NextRequest(req.url, {
     method: "POST",
     headers: req.headers,
     body: JSON.stringify(body),
   });
-
+ const limited = rateLimit(req as any);
+  if (limited) {
+    return limited;
+  }
   return create(newReq, body.documentId);
 }
-
-// ====================================
-// PATCH /api/versions
-// ====================================
 
 export async function PATCH(
   req: NextRequest
@@ -85,6 +79,11 @@ export async function PATCH(
     headers: req.headers,
     body: JSON.stringify(body),
   });
+   const limited = rateLimit(req as any);
+
+  if (limited) {
+    return limited;
+  }
 
   return restore(
     newReq,

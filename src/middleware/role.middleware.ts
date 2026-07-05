@@ -10,7 +10,7 @@ export async function checkDocumentRole(
   userId: string,
   allowedRoles: DocumentRole[]
 ) {
-  // Owner always has full access
+ 
   const document = await prisma.document.findFirst({
     where: {
       id: documentId,
@@ -22,7 +22,6 @@ export async function checkDocumentRole(
     return true;
   }
 
-  // Check member role
   const member = await prisma.documentMember.findFirst({
     where: {
       documentId,

@@ -4,23 +4,28 @@ import {
   create,
   getAll,
 } from "@/src/controllers/document.controller";
-
-// ========================
-// GET /api/documents
-// ========================
+import { rateLimit } from "@/src/middleware/rate-limit.middleware";
 
 export async function GET(
   req: NextRequest
 ) {
+  const limited = rateLimit(req as any);
+
+  if (limited) {
+    return limited;
+  }
+
   return getAll(req);
 }
 
-// ========================
-// POST /api/documents
-// ========================
 
 export async function POST(
   req: NextRequest
 ) {
+   const limited = rateLimit(req as any);
+
+  if (limited) {
+    return limited;
+  }
   return create(req);
 }

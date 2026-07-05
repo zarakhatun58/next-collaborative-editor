@@ -117,17 +117,12 @@ export async function updateProfile(
   req: NextRequest
 ) {
   try {
-
     const auth = await authenticate(req);
-
     const body = await req.json();
-
     const {
       name,
       email,
     } = body;
-
-
     const user =
       await prisma.user.update({
         where: {
@@ -155,18 +150,18 @@ export async function updateProfile(
     });
 
 
-  } catch(error) {
+  } catch (error) {
 
     return NextResponse.json(
       {
-        success:false,
+        success: false,
         message:
           error instanceof Error
-          ? error.message
-          : "Update failed",
+            ? error.message
+            : "Update failed",
       },
       {
-        status:400,
+        status: 400,
       }
     );
   }

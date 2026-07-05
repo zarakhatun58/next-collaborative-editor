@@ -1,22 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
-
 import {
   createConflict,
   getConflicts,
   resolveConflict,
   deleteConflict,
 } from "@/src/services/conflict.service";
-
 import { getCurrentUser } from "@/src/services/auth.service";
-
 import {
   createConflictSchema,
   resolveConflictSchema,
 } from "@/src/validators/conflict.validation";
 
-// ===============================
-// Create Conflict
-// ===============================
+
 
 export async function create(
   req: NextRequest
@@ -55,18 +50,12 @@ export async function create(
   }
 }
 
-// ===============================
-// Get All Conflicts
-// ===============================
-
 export async function getAll(
   req: NextRequest
 ) {
   try {
     const user = await getCurrentUser(req);
-
     const { searchParams } = new URL(req.url);
-
     const documentId = searchParams.get(
       "documentId"
     );
@@ -101,18 +90,12 @@ export async function getAll(
   }
 }
 
-// ===============================
-// Resolve Conflict
-// ===============================
-
 export async function resolve(
   req: NextRequest
 ) {
   try {
     const user = await getCurrentUser(req);
-
     const body = await req.json();
-
     const data =
       resolveConflictSchema.parse(body);
 
@@ -140,10 +123,6 @@ export async function resolve(
     );
   }
 }
-
-// ===============================
-// Delete Conflict
-// ===============================
 
 export async function remove(
   req: NextRequest

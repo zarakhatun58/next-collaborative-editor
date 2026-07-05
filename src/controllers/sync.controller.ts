@@ -1,38 +1,42 @@
 import { NextRequest, NextResponse } from "next/server";
 import { Prisma, SyncOperationType } from "@prisma/client";
-
+import {
+  createSyncSchema,
+  processQueueSchema,
+  createConflictSchema,
+  resolveConflictSchema,
+  queueSchema,
+  optionalDocumentSchema,
+} from "@/src/validators/sync.validation";
 import {
   createSyncOperation,
   getPendingOperations,
   processQueue,
   createConflict,
   getConflicts,
-   getAllConflicts,
+  getAllConflicts,
   resolveConflict,
 } from "@/src/services/sync.service";
-
 import { getCurrentUser } from "@/src/services/auth.service";
 
-// =====================================
-// Create Sync Operation
-// POST /api/sync
-// =====================================
 
 export async function create(req: NextRequest) {
   try {
     const user = await getCurrentUser(req);
 
-    const body = await req.json();
+    const body = createSyncSchema.parse(
+      await req.json()
+    );
 
-   const operation = await createSyncOperation(
-  body.documentId,
-  user.id,
-  body.operationType,
-  body.payload,
-  body.baseVersion,
-  body.clientVersion,
-  new Date(body.clientTimestamp)
-);
+    const operation = await createSyncOperation(
+      body.documentId,
+      user.id,
+      body.operationType,
+      body.payload,
+      body.baseVersion,
+      body.clientVersion,
+      new Date(body.clientTimestamp)
+    );
 
     return NextResponse.json(
       {
@@ -59,10 +63,6 @@ export async function create(req: NextRequest) {
   }
 }
 
-// =====================================
-// Get Pending Queue
-// GET /api/sync/queue
-// =====================================
 
 export async function queue(
   req: NextRequest
@@ -70,16 +70,16 @@ export async function queue(
   try {
     const user = await getCurrentUser(req);
 
-    const documentId =
-      req.nextUrl.searchParams.get("documentId");
-
-    if (!documentId) {
-      throw new Error("Document ID is required");
-    }
+    const parsed = queueSchema.parse({
+      documentId:
+        req.nextUrl.searchParams.get(
+          "documentId"
+        ),
+    });
 
     const operations =
       await getPendingOperations(
-        documentId,
+        parsed.documentId,
         user.id
       );
 
@@ -103,18 +103,15 @@ export async function queue(
   }
 }
 
-// =====================================
-// Process Queue
-// POST /api/sync/process
-// =====================================
-
 export async function process(
   req: NextRequest
 ) {
   try {
     const user = await getCurrentUser(req);
 
-    const body = await req.json();
+    const body = processQueueSchema.parse(
+      await req.json()
+    );
 
     const result = await processQueue(
       body.documentId,
@@ -138,18 +135,15 @@ export async function process(
   }
 }
 
-// =====================================
-// Create Conflict
-// POST /api/sync/conflict
-// =====================================
-
 export async function conflict(
   req: NextRequest
 ) {
   try {
     const user = await getCurrentUser(req);
-
-    const body = await req.json();
+    const body =
+      createConflictSchema.parse(
+        await req.json()
+      );
 
     const data =
       await createConflict(
@@ -184,23 +178,28 @@ export async function conflict(
   }
 }
 
-// =====================================
-// Get Conflicts
-// GET /api/sync/conflict
-// =====================================
-
 export async function conflicts(
   req: NextRequest
 ) {
   try {
     const user = await getCurrentUser(req);
 
-    const documentId =
-      req.nextUrl.searchParams.get("documentId");
+    const parsed =
+      optionalDocumentSchema.parse({
+        documentId:
+          req.nextUrl.searchParams.get(
+            "documentId"
+          ) ?? undefined,
+      });
 
-    const result = documentId
-      ? await getConflicts(documentId, user.id)
-      : await getAllConflicts(user.id);
+    const result = parsed.documentId
+      ? await getConflicts(
+          parsed.documentId,
+          user.id
+        )
+      : await getAllConflicts(
+          user.id
+        );
 
     return NextResponse.json({
       success: true,
@@ -222,18 +221,16 @@ export async function conflicts(
   }
 }
 
-// =====================================
-// Resolve Conflict
-// PATCH /api/sync/conflict
-// =====================================
-
 export async function resolve(
   req: NextRequest
 ) {
   try {
     const user = await getCurrentUser(req);
 
-    const body = await req.json();
+    const body =
+      resolveConflictSchema.parse(
+        await req.json()
+      );
 
     const result =
       await resolveConflict(

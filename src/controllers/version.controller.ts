@@ -7,12 +7,8 @@ import {
   restoreVersion,
   deleteVersion,
 } from "@/src/services/version.service";
-
 import { getCurrentUser } from "@/src/services/auth.service";
 
-// ===============================
-// Create Version
-// ===============================
 
 export async function create(
   req: NextRequest,
@@ -55,10 +51,6 @@ export async function create(
   }
 }
 
-// ===============================
-// Get Versions
-// ===============================
-
 export async function getAll(
   req: NextRequest,
   documentId: string
@@ -90,10 +82,6 @@ export async function getAll(
     );
   }
 }
-
-// ===============================
-// Restore Version
-// ===============================
 
 export async function restore(
     req: NextRequest,

@@ -1,10 +1,6 @@
 import { prisma } from "@/src/config/prisma";
 import { Prisma } from "@prisma/client";
 
-// ===================================
-// Create Conflict
-// ===================================
-
 export async function createConflict(
   documentId: string,
   localContent: any,
@@ -18,10 +14,6 @@ export async function createConflict(
     },
   });
 }
-
-// ===================================
-// Get Conflicts
-// ===================================
 
 export async function getConflicts(
   documentId: string,
@@ -59,10 +51,6 @@ export async function getConflicts(
     },
   });
 }
-
-// ===================================
-// Resolve Conflict
-// ===================================
 
 export async function resolveConflict(
   conflictId: string,
@@ -120,10 +108,6 @@ export async function resolveConflict(
     },
   });
 }
-
-// ===================================
-// Delete Conflict
-// ===================================
 
 export async function deleteConflict(
   conflictId: string

@@ -6,9 +6,6 @@ import type {
   QueueItem,
 } from "@/src/lib/db";
 
-// ==============================
-// Save Local Document
-// ==============================
 
 export async function saveLocalDocument(
   document: Omit<LocalDocument, "updatedAt">
@@ -18,20 +15,11 @@ export async function saveLocalDocument(
     updatedAt: Date.now(),
   });
 }
-
-// ==============================
-// Get Local Document
-// ==============================
-
 export async function getLocalDocument(
   id: string
 ) {
   return db.documents.get(id);
 }
-
-// ==============================
-// Get All Local Documents
-// ==============================
 
 export async function getLocalDocuments() {
   return db.documents
@@ -40,19 +28,11 @@ export async function getLocalDocuments() {
     .toArray();
 }
 
-// ==============================
-// Delete Local Document
-// ==============================
-
 export async function deleteLocalDocument(
   id: string
 ) {
   await db.documents.delete(id);
 }
-
-// ==============================
-// Queue Operation
-// ==============================
 
 export async function queueOperation({
   documentId,
@@ -73,19 +53,11 @@ export async function queueOperation({
   });
 }
 
-// ==============================
-// Pending Queue
-// ==============================
-
 export async function getPendingOperations() {
   return db.syncQueue
     .filter(item => !item.synced)
     .toArray();
 }
-
-// ==============================
-// Mark Synced
-// ==============================
 
 export async function markSynced(
   id: number
@@ -95,9 +67,6 @@ export async function markSynced(
   });
 }
 
-// ==============================
-// Increase Retry Count
-// ==============================
 
 export async function incrementRetry(
   id: number
@@ -111,9 +80,6 @@ export async function incrementRetry(
   });
 }
 
-// ==============================
-// Remove Synced Queue
-// ==============================
 
 export async function clearSyncedOperations() {
   const synced = await db.syncQueue
@@ -126,10 +92,6 @@ export async function clearSyncedOperations() {
     }
   }
 }
-
-// ==============================
-// Queue Count
-// ==============================
 
 export async function getQueueCount() {
  const pending = await db.syncQueue

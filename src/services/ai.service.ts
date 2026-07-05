@@ -4,9 +4,6 @@ const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY!,
 });
 
-// ===============================
-// Summarize
-// ===============================
 
 export async function summarizeText(
   text: string
@@ -33,9 +30,6 @@ ${text}
   return response.text?.trim();
 }
 
-// ===============================
-// Rewrite
-// ===============================
 
 export async function rewriteText(
   text: string
@@ -60,10 +54,6 @@ ${text}
 
   return response.text?.trim();
 }
-
-// ===============================
-// Improve Writing
-// ===============================
 
 export async function improveWriting(
   text: string
@@ -90,9 +80,6 @@ ${text}
   return response.text?.trim();
 }
 
-// ===============================
-// Grammar Correction
-// ===============================
 
 export async function grammarCheck(
   text: string
@@ -118,9 +105,7 @@ ${text}
 
   return response.text?.trim();
 }
-// ===============================
-// Continue Writing
-// ===============================
+
 
 export async function continueWriting(
   text: string
@@ -146,9 +131,7 @@ ${text}
 
   return response.text?.trim();
 }
-// ===============================
-// Generate Title
-// ===============================
+
 
 export async function generateTitle(
   text: string
@@ -173,9 +156,6 @@ ${text}
 
   return response.text?.trim();
 }
-// ===============================
-// Translate
-// ===============================
 
 export async function translateText(
   text: string,
@@ -200,10 +180,6 @@ ${text}
 
   return response.text?.trim();
 }
-// ===============================
-// Convert to Bullet Points
-// ===============================
-
 export async function convertToBullets(
   text: string
 ) {
@@ -227,9 +203,7 @@ ${text}
 
   return response.text?.trim();
 }
-// ===============================
-// Change Tone
-// ===============================
+
 
 export async function changeTone(
   text: string,
@@ -255,9 +229,6 @@ ${text}
 
   return response.text?.trim();
 }
-// ===============================
-// Simplify Text
-// ===============================
 
 export async function simplifyText(
   text: string
@@ -282,9 +253,6 @@ ${text}
 
   return response.text?.trim();
 }
-// ===============================
-// Explain Text
-// ===============================
 
 export async function explainText(
   text: string

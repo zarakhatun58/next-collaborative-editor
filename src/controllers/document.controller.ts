@@ -7,17 +7,12 @@ import {
   updateDocument,
   deleteDocument,
 } from "@/src/services/document.service";
-
 import {
   createDocumentSchema,
   updateDocumentSchema,
 } from "@/src/validators/document.validation";
-
 import { getCurrentUser } from "@/src/services/auth.service";
 
-// ===============================
-// Create Document
-// ===============================
 
 export async function create(req: NextRequest) {
   try {
@@ -62,10 +57,6 @@ export async function create(req: NextRequest) {
   }
 }
 
-// ===============================
-// Get All Documents
-// ===============================
-
 export async function getAll(
   req: NextRequest
 ) {
@@ -94,11 +85,6 @@ export async function getAll(
     );
   }
 }
-
-// ===============================
-// Get One Document
-// ===============================
-
 export async function getOne(
   req: NextRequest,
   id: string
@@ -131,10 +117,6 @@ export async function getOne(
     );
   }
 }
-
-// ===============================
-// Update Document
-// ===============================
 
 export async function update(
   req: NextRequest,
@@ -175,10 +157,6 @@ export async function update(
     );
   }
 }
-
-// ===============================
-// Delete Document
-// ===============================
 
 export async function remove(
   req: NextRequest,

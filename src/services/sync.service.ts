@@ -1,9 +1,11 @@
 import { prisma } from "@/src/config/prisma";
 import { Prisma, SyncOperationType } from "@prisma/client";
 import { mergeDocument } from "@/src/services/merge.service";
-// ===============================
-// Create Sync Operation
-// ===============================
+
+
+const MAX_DOCUMENT_SIZE = 2 * 1024 * 1024; 
+const MAX_TITLE_LENGTH = 200;
+
 
 export async function createSyncOperation(
   documentId: string,
@@ -47,44 +49,123 @@ export async function createSyncOperation(
   // Current document
   // ---------------------------------
 
-  const currentDocument = await prisma.document.findUnique({
-    where: {
-      id: documentId,
-    },
-  });
+  const currentDocument =
+    await prisma.document.findUnique({
+      where: {
+        id: documentId,
+      },
+    });
 
   if (!currentDocument) {
     throw new Error("Document not found.");
   }
+
+  // ---------------------------------
+  // Parse Payload
+  // ---------------------------------
 
   const incoming = payload as {
     title: string;
     content: string;
   };
 
-  let finalContent = incoming.content;
+  // ---------------------------------
+  // Payload Validation
+  // ---------------------------------
+
+  if (
+    typeof incoming.title !== "string" ||
+    typeof incoming.content !== "string"
+  ) {
+    throw new Error("Invalid payload.");
+  }
+
+  if (!incoming.title.trim()) {
+    throw new Error("Title is required.");
+  }
+
+  if (
+    incoming.title.length >
+    MAX_TITLE_LENGTH
+  ) {
+    throw new Error(
+      "Title exceeds maximum length."
+    );
+  }
+
+  const contentSize =
+    Buffer.byteLength(
+      incoming.content,
+      "utf8"
+    );
+
+  if (
+    contentSize >
+    MAX_DOCUMENT_SIZE
+  ) {
+    throw new Error(
+      "Document exceeds maximum allowed size (2MB)."
+    );
+  }
+
+  if (
+    baseVersion < 0 ||
+    clientVersion < 0
+  ) {
+    throw new Error(
+      "Invalid version number."
+    );
+  }
+
+  if (
+    Number.isNaN(
+      clientTimestamp.getTime()
+    )
+  ) {
+    throw new Error(
+      "Invalid client timestamp."
+    );
+  }
+
+  let finalContent =
+    incoming.content;
 
   // ---------------------------------
   // Conflict Detection
   // ---------------------------------
 
-  if (baseVersion !== currentDocument.version) {
-
+  if (
+    baseVersion !==
+    currentDocument.version
+  ) {
     const serverContent =
-      typeof currentDocument.content === "string"
+      typeof currentDocument.content ===
+      "string"
         ? currentDocument.content
-        : JSON.stringify(currentDocument.content);
+        : JSON.stringify(
+            currentDocument.content
+          );
 
-    const merge = mergeDocument({
-      baseContent: serverContent,
-      localContent: incoming.content,
-      remoteContent: serverContent,
-    });
+    let merge;
 
-    finalContent = merge.mergedContent;
+    try {
+      merge = mergeDocument({
+        baseContent: serverContent,
+        localContent:
+          incoming.content,
+        remoteContent:
+          serverContent,
+      });
+    } catch {
+      throw new Error(
+        "Unable to merge document."
+      );
+    }
+
+    finalContent =
+      merge.mergedContent;
 
     if (merge.conflict) {
-
       await prisma.conflict.create({
         data: {
           documentId,
@@ -94,16 +175,16 @@ export async function createSyncOperation(
 
           remoteContent:
             (currentDocument.content ??
-              Prisma.JsonNull) as Prisma.InputJsonValue | typeof Prisma.JsonNull,
+              Prisma.JsonNull) as
+              | Prisma.InputJsonValue
+              | typeof Prisma.JsonNull,
         },
       });
-
     }
-
   }
 
   // ---------------------------------
-  // Update document
+  // Update Document
   // ---------------------------------
 
   const updatedDocument =
@@ -113,13 +194,34 @@ export async function createSyncOperation(
       },
       data: {
         title: incoming.title,
-        content: finalContent as Prisma.InputJsonValue,
+        content:
+          finalContent as Prisma.InputJsonValue,
         version: {
           increment: 1,
         },
         lastEditedBy: userId,
       },
     });
+
+  // ---------------------------------
+  // Prevent Duplicate Sync Operations
+  // ---------------------------------
+
+  const existing =
+    await prisma.syncOperation.findFirst({
+      where: {
+        documentId,
+        operationType,
+        clientTimestamp,
+      },
+    });
+
+  if (existing) {
+    return {
+      operation: existing,
+      document: updatedDocument,
+    };
+  }
 
   // ---------------------------------
   // Save Sync Operation
@@ -143,29 +245,29 @@ export async function createSyncOperation(
   };
 }
 
-// ===============================
-// Get Pending Queue
-// ===============================
 
 export async function getPendingOperations(
   documentId: string,
   userId: string
 ) {
-  const document = await prisma.document.findFirst({
-    where: {
-      id: documentId,
-      OR: [
-        { ownerId: userId },
-        {
-          members: {
-            some: {
-              userId,
+  const document =
+    await prisma.document.findFirst({
+      where: {
+        id: documentId,
+        OR: [
+          {
+            ownerId: userId,
+          },
+          {
+            members: {
+              some: {
+                userId,
+              },
             },
           },
-        },
-      ],
-    },
-  });
+        ],
+      },
+    });
 
   if (!document) {
     throw new Error("Access denied.");
@@ -182,23 +284,38 @@ export async function getPendingOperations(
   });
 }
 
-// ===============================
-// Process Queue
-// ===============================
-
 export async function processQueue(
   documentId: string,
   userId: string
 ) {
-  const document = await prisma.document.findFirst({
-    where: {
-      id: documentId,
-      ownerId: userId,
-    },
-  });
+  const document =
+    await prisma.document.findFirst({
+      where: {
+        id: documentId,
+        ownerId: userId,
+      },
+    });
 
   if (!document) {
-    throw new Error("Only the owner can process sync.");
+    throw new Error(
+      "Only the owner can process sync."
+    );
+  }
+
+  const pending =
+    await prisma.syncOperation.count({
+      where: {
+        documentId,
+        processed: false,
+      },
+    });
+
+  if (pending === 0) {
+    return {
+      success: true,
+      message:
+        "No pending operations.",
+    };
   }
 
   await prisma.syncOperation.updateMany({
@@ -214,13 +331,11 @@ export async function processQueue(
 
   return {
     success: true,
-    message: "Queue processed successfully.",
+    processed: pending,
+    message:
+      "Queue processed successfully.",
   };
 }
-
-// ===============================
-// Create Conflict
-// ===============================
 
 export async function createConflict(
   documentId: string,
@@ -228,24 +343,41 @@ export async function createConflict(
   localContent: Prisma.InputJsonValue,
   remoteContent: Prisma.InputJsonValue
 ) {
-  const document = await prisma.document.findFirst({
-    where: {
-      id: documentId,
-      OR: [
-        { ownerId: userId },
-        {
-          members: {
-            some: {
-              userId,
+  const document =
+    await prisma.document.findFirst({
+      where: {
+        id: documentId,
+        OR: [
+          {
+            ownerId: userId,
+          },
+          {
+            members: {
+              some: {
+                userId,
+              },
             },
           },
-        },
-      ],
-    },
-  });
+        ],
+      },
+    });
 
   if (!document) {
     throw new Error("Access denied.");
+  }
+
+  // Prevent duplicate unresolved conflicts
+
+  const existing =
+    await prisma.conflict.findFirst({
+      where: {
+        documentId,
+        resolved: false,
+      },
+    });
+
+  if (existing) {
+    return existing;
   }
 
   return prisma.conflict.create({
@@ -257,29 +389,28 @@ export async function createConflict(
   });
 }
 
-// ===============================
-// Get Conflicts
-// ===============================
-
 export async function getConflicts(
   documentId: string,
   userId: string
 ) {
-  const document = await prisma.document.findFirst({
-    where: {
-      id: documentId,
-      OR: [
-        { ownerId: userId },
-        {
-          members: {
-            some: {
-              userId,
+  const document =
+    await prisma.document.findFirst({
+      where: {
+        id: documentId,
+        OR: [
+          {
+            ownerId: userId,
+          },
+          {
+            members: {
+              some: {
+                userId,
+              },
             },
           },
-        },
-      ],
-    },
-  });
+        ],
+      },
+    });
 
   if (!document) {
     throw new Error("Access denied.");
@@ -294,9 +425,6 @@ export async function getConflicts(
     },
   });
 }
-// ===============================
-// Get All Conflicts
-// ===============================
 
 export async function getAllConflicts(
   userId: string
@@ -304,6 +432,7 @@ export async function getAllConflicts(
   return prisma.conflict.findMany({
     where: {
       resolved: false,
+
       document: {
         OR: [
           {
@@ -319,6 +448,7 @@ export async function getAllConflicts(
         ],
       },
     },
+
     include: {
       document: {
         select: {
@@ -327,30 +457,53 @@ export async function getAllConflicts(
         },
       },
     },
+
     orderBy: {
       createdAt: "desc",
     },
   });
 }
-// ===============================
-// Resolve Conflict
-// ===============================
 
 export async function resolveConflict(
   conflictId: string,
   userId: string
 ) {
-  const conflict = await prisma.conflict.findFirst({
-    where: {
-      id: conflictId,
-      document: {
-        ownerId: userId,
+  const conflict =
+    await prisma.conflict.findFirst({
+      where: {
+        id: conflictId,
+
+        document: {
+          OR: [
+            {
+              ownerId: userId,
+            },
+            {
+              members: {
+                some: {
+                  userId,
+                  role: {
+                    in: [
+                      "OWNER",
+                      "EDITOR",
+                    ],
+                  },
+                },
+              },
+            },
+          ],
+        },
       },
-    },
-  });
+    });
 
   if (!conflict) {
-    throw new Error("Conflict not found.");
+    throw new Error(
+      "Conflict not found."
+    );
+  }
+
+  if (conflict.resolved) {
+    return conflict;
   }
 
   return prisma.conflict.update({
