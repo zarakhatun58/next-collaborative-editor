@@ -17,6 +17,7 @@ import EditorFooter from "@/src/components/editor/EditorFooter";
 import TypingIndicator from "@/src/components/editor/TypingIndicator";
 import DocumentInfo from "@/src/components/editor/DocumentInfo";
 import SyncStatus from "@/src/components/editor/DocumentHeader/sync-status";
+import CommentPanel from "@/src/components/comments/CommentPanel";
 
 export default function DocumentEditorPage() {
   const params = useParams();
@@ -30,6 +31,12 @@ export default function DocumentEditorPage() {
   const [loading, setLoading] = useState(true);
   const [title, setTitle] = useState("");
   const [content, setContent] = useState("");
+  const [dirty, setDirty] = useState(false);
+
+  const handleContentChange = (html: string) => {
+    setContent(html);
+    setDirty(true);
+  };
   const [saving, setSaving] = useState(false);
   const [syncing, setSyncing] = useState(false);
   const [queued] = useState(0);
@@ -45,6 +52,11 @@ export default function DocumentEditorPage() {
   }[]>([]);
   const [updatedAt, setUpdatedAt] = useState("");
   const [online, setOnline] = useState(true);
+
+  const handleTitleChange = (value: string) => {
+    setTitle(value);
+    setDirty(true);
+  };
   const loadDocument = async () => {
     try {
       setLoading(true);
@@ -189,31 +201,30 @@ export default function DocumentEditorPage() {
     };
   }, []);
   useEffect(() => {
-    if (!documentId || !loaded) return;
+    if (!documentId || !loaded || !dirty) return;
 
     if (!initialized.current) {
       initialized.current = true;
       return;
     }
-
     const timer = setTimeout(async () => {
       try {
+        if (!title.trim()) return;
         setSaving(true);
 
-        await api.patch(`/documents/${documentId}`, {
+        const { data } = await api.patch(`/documents/${documentId}`, {
           title,
           content,
         });
-
-        setVersion((v) => v + 1);
-        setUpdatedAt(new Date().toISOString());
+        setDirty(false);
+        setUpdatedAt(data.document.updatedAt);
+        setVersion(data.document.version);
       } catch (error) {
         console.error(error);
       } finally {
         setSaving(false);
       }
     }, 1000);
-
     return () => clearTimeout(timer);
   }, [title, content, loaded]);
 
@@ -256,7 +267,7 @@ export default function DocumentEditorPage() {
         online={online}
         saving={saving}
         collaborators={4}
-        onTitleChange={setTitle}
+        onTitleChange={handleTitleChange}
         onVersionHistory={() => { }}
         onAI={() => { }}
       />
@@ -269,7 +280,7 @@ export default function DocumentEditorPage() {
           content={content}
           documentId={documentId}
           socket={socket.current}
-          onChange={setContent}
+          onChange={handleContentChange}
           onEditorReady={setEditor}
         />
 
@@ -293,7 +304,9 @@ export default function DocumentEditorPage() {
 
 
           <VersionHistory documentId={documentId} />
-
+          <CommentPanel
+            documentId={documentId}
+          />
           <Collaborators users={onlineUsers} />
           {cursors.map((cursor) => (
             <Cursor

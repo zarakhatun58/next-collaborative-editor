@@ -18,18 +18,13 @@ export default function CommentPanel({
 
   async function addComment() {
     if (!comment.trim()) return;
-
     try {
       setLoading(true);
-
       await api.post(`/documents/${documentId}/comments`, {
         text: comment,
       });
-
       setComment("");
-
       onAdded?.();
-
     } finally {
       setLoading(false);
     }
@@ -37,17 +32,12 @@ export default function CommentPanel({
 
   return (
     <div className="glass-card rounded-3xl p-5">
-
       <div className="mb-5 flex items-center gap-2">
-
         <MessageCircle size={18} />
-
         <h3 className="font-semibold">
           Add Comment
         </h3>
-
       </div>
-
       <textarea
         rows={4}
         value={comment}
@@ -62,11 +52,8 @@ export default function CommentPanel({
         className="btn-gradient mt-4 flex w-full items-center justify-center gap-2 rounded-xl py-3"
       >
         <Send size={18} />
-
         {loading ? "Posting..." : "Post Comment"}
-
       </button>
-
     </div>
   );
 }

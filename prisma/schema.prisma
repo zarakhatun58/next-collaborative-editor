@@ -27,81 +27,102 @@ enum SyncOperationType {
 }
 
 model User {
-  id       String  @id @default(uuid())
-  name     String?
-  email    String  @unique
-  password String
-  ownedDocuments Document[] @relation("OwnerDocuments")
-  memberships DocumentMember[]
-  versions    DocumentVersion[] @relation("VersionCreator")
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id             String            @id @default(uuid())
+  name           String?
+  email          String            @unique
+  password       String
+  ownedDocuments Document[]        @relation("OwnerDocuments")
+  memberships    DocumentMember[]
+  comments       Comment[]
+  versions       DocumentVersion[] @relation("VersionCreator")
+  createdAt      DateTime          @default(now())
+  updatedAt      DateTime          @updatedAt
 }
 
 model Document {
-  id String @id @default(uuid())
-  title   String
-  content Json
-  status  DocumentStatus @default(ACTIVE)
-  ownerId String
-  owner User @relation("OwnerDocuments", fields: [ownerId], references: [id])
-  version Int @default(1)
+  id           String            @id @default(uuid())
+  title        String
+  content      Json
+  status       DocumentStatus    @default(ACTIVE)
+  ownerId      String
+  owner        User              @relation("OwnerDocuments", fields: [ownerId], references: [id])
+  version      Int               @default(1)
   members      DocumentMember[]
   versions     DocumentVersion[]
+  comments     Comment[]
   syncOps      SyncOperation[]
   conflicts    Conflict[]
   lastEditedBy String?
   createdAt    DateTime          @default(now())
   updatedAt    DateTime          @updatedAt
+
   @@index([ownerId])
 }
 
 model DocumentMember {
-  id String @id @default(uuid())
+  id         String   @id @default(uuid())
   documentId String
-  userId String
-  role Role
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  userId     String
+  role       Role
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
   @@unique([documentId, userId])
   @@index([documentId])
   @@index([userId])
 }
 
 model DocumentVersion {
-  id String @id @default(uuid())
-  documentId String
-  name String?
-  content Json
+  id          String   @id @default(uuid())
+  documentId  String
+  name        String?
+  content     Json
   createdById String
-  createdBy User @relation("VersionCreator", fields: [createdById], references: [id])
-  createdAt DateTime @default(now())
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  createdBy   User     @relation("VersionCreator", fields: [createdById], references: [id])
+  createdAt   DateTime @default(now())
+  document    Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
   @@index([documentId])
 }
 
 model SyncOperation {
-  id String @id @default(uuid())
-  documentId String
-  operationType SyncOperationType
-  payload Json
+  id              String            @id @default(uuid())
+  documentId      String
+  operationType   SyncOperationType
+  payload         Json
   clientTimestamp DateTime
   serverTimestamp DateTime?
-  processed Boolean @default(false)
-  retryCount Int @default(0)
-  error String?
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  processed       Boolean           @default(false)
+  retryCount      Int               @default(0)
+  error           String?
+  document        Document          @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  createdAt       DateTime          @default(now())
+
   @@index([documentId])
 }
 
 model Conflict {
-  id String @id @default(uuid())
-  documentId String
-  localContent Json
+  id            String   @id @default(uuid())
+  documentId    String
+  localContent  Json
   remoteContent Json
-  resolved Boolean @default(false)
-  createdAt DateTime @default(now())
-  document Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  resolved      Boolean  @default(false)
+  createdAt     DateTime @default(now())
+  document      Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
   @@index([documentId])
+}
+
+model Comment {
+  id         String   @id @default(uuid())
+  documentId String
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  userId     String
+  user       User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  message    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([documentId])
+  @@index([userId])
 }

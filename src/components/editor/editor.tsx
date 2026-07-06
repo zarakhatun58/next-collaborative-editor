@@ -29,6 +29,7 @@ export default function DocumentEditor({
   onChange,
   onEditorReady,
 }: Props) {
+  
 
   const editor = useEditor({
     extensions: [
@@ -40,7 +41,8 @@ export default function DocumentEditor({
     ],
     content,
     immediatelyRender: false,
-    onUpdate({ editor }) {
+    onUpdate({ editor, transaction }) {
+      if (!transaction.docChanged) return;
       const html = editor.getHTML();
       onChange(html);
       socket?.emit("document-update", {
@@ -68,17 +70,16 @@ export default function DocumentEditor({
    */
   useEffect(() => {
     if (!editor) return;
-
-    if (editor.getHTML() !== content) {
-      editor.commands.setContent(content);
-    }
+    if (content === "") return;
+    if (editor.getHTML() === content) return;
+    editor.commands.setContent(content, {
+      emitUpdate: false,
+    });
   }, [content, editor]);
+
   useEffect(() => {
-
     if (!editor) return;
-
     if (!socket) return;
-
     const receiveUpdate = (
       data: {
         content: string;
